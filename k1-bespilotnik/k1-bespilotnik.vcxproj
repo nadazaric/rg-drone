@@ -135,7 +135,6 @@
     <ClCompile Include="restricted_zone_drawer.cpp" />
     <ClCompile Include="shader_helper.cpp" />
     <ClCompile Include="texture_helper.cpp" />
-    <ClCompile Include="title_drawer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="circle_helper.h" />
@@ -149,7 +148,6 @@
     <ClInclude Include="shader_helper.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="texture_helper.h" />
-    <ClInclude Include="title_drawer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="basic.frag" />
@@ -171,6 +169,8 @@
   <ItemGroup>
     <Content Include="basic_3d.frag" />
     <Content Include="basic_3d.vert" />
+    <Content Include="texture.frag" />
+    <Content Include="texture.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

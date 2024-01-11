@@ -1,2 +1,2 @@
 // #pragma once
-// unsigned loadImageToTexture(const char* filePath);
+// unsigned loadImgToTex(const char* filePath);

@@ -56,7 +56,7 @@ constexpr float MAP_RIGHT = 0.95;
 constexpr float MAP_TOP = 0.9;
 constexpr float MAP_BOTTOM = -0.65;
 
-constexpr float TITLE_LEFT = -0.95;
+constexpr float TITLE_LEFT = -1.0;
 constexpr float TITLE_RIGHT = -0.6;
 constexpr float TITLE_TOP = 0.99;
 constexpr float TITLE_BOTTOM = 0.9;
