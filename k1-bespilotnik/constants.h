@@ -51,10 +51,14 @@ constexpr float CIRCLE_RESTRICTED_ZONE_RADIUS = 0.35;
 constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_X = 0.1;
 constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_Y = 0.3;
 
-constexpr float MAP_LEFT = -0.95;
-constexpr float MAP_RIGHT = 0.95;
-constexpr float MAP_TOP = 0.9;
-constexpr float MAP_BOTTOM = -0.65;
+constexpr float MAP_LEFT = -1;
+constexpr float MAP_RIGHT = 1;
+constexpr float MAP_TOP = 1;
+constexpr float MAP_BOTTOM = -1;
+
+
+constexpr unsigned int MAP_WIDTH = 400;
+constexpr unsigned int MAP_HEIGHT = 300;
 
 constexpr float TITLE_LEFT = -1.0;
 constexpr float TITLE_RIGHT = -0.6;

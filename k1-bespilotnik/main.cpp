@@ -50,7 +50,7 @@ static unsigned loadImageToTexture(const char* filePath) {
 }
 
 void draw2D() {
-    //glViewport(WIDTH - MAP_WIDTH, 0, MAP_WIDTH, MAP_HEIGHT);
+    glViewport(WINDOW_WIDTH - MAP_WIDTH, 0, MAP_WIDTH, MAP_HEIGHT);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
     glDisable(GL_CULL_FACE);
@@ -101,6 +101,8 @@ int main() {
     unsigned int VBO[4];
     glGenBuffers(4, VBO);
 
+    // Shaders
+    unsigned int basicShader = createShader("basic.vert", "basic.frag");
     unsigned int textureShader = createShader("texture.vert", "texture.frag");
 
     // Name
@@ -122,7 +124,6 @@ int main() {
     glEnableVertexAttribArray(1);
 
     unsigned nameTexture = loadImageToTexture(TITLE_IMAGE_PATH);
-
     glBindTexture(GL_TEXTURE_2D, nameTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -139,6 +140,28 @@ int main() {
         MAP_RIGHT, MAP_TOP,     1.0, 1.0,    0.1, 0.9, 0.5, 0.3,
      };
     unsigned int mapStride = (2 + 2 + 4) * sizeof(float);
+
+    glBindVertexArray(VAO[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesMap), verticesMap, GL_STATIC_DRAW);
+    // position
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, mapStride, (void*)0);
+    glEnableVertexAttribArray(0);
+    // texture position
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, mapStride, (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // rgba (for glass)
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, mapStride, (void*)(4 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    unsigned mapTexture = loadImageToTexture(MAP_IMAGE_PATH);
+    glBindTexture(GL_TEXTURE_2D, mapTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
     
     
     // createTitle();
@@ -177,6 +200,15 @@ int main() {
 
         glClearColor(0.2, 0.2, 0.2, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // 3D
+
+        // Map
+        draw3D();
+
+        basic3dShader.use();
+        basic3dShader.setMat4("uM", glm::mat4(1.0f));
+        map.Draw(basic3dShader);
 
         // 2D
         
@@ -188,14 +220,14 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, nameTexture);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-        // 3D
-
         // Map
-        draw3D();
-
-        basic3dShader.use();
-        basic3dShader.setMat4("uM", glm::mat4(1.0f));
-        map.Draw(basic3dShader);
+        draw2D();
+        glBindVertexArray(VAO[1]);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mapTexture);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // already active texture shader
+        glUseProgram(basicShader);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         //drawTitle();
         // drawMap();
@@ -217,12 +249,14 @@ int main() {
 
     // Delete Textures
     glDeleteTextures(1, &nameTexture);
+    glDeleteTextures(1, &mapTexture);
 
     // Delete VBO and VAO
     glDeleteBuffers(4, VBO);
     glDeleteVertexArrays(4, VAO);
 
     // Delete shaders
+    glDeleteProgram(basicShader);
     glDeleteProgram(textureShader);
     
     glfwTerminate();
