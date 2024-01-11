@@ -13,6 +13,7 @@
 #include "model.hpp"
 #include "planes_drawer.h"
 #include "shader.hpp"
+#include "circle_helper.h"
 using namespace std;
 
 static unsigned loadImageToTexture(const char* filePath) {
@@ -56,7 +57,7 @@ void draw2D() {
     glDisable(GL_CULL_FACE);
 }
 void drawName2D() {
-    //glViewport(0, HEIGHT - NAME_HEIGHT, NAME_WIDTH, NAME_HEIGHT);
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
     glDisable(GL_CULL_FACE);
@@ -134,25 +135,21 @@ int main() {
     // Map
     float verticesMap[] =
     {
-        MAP_LEFT, MAP_BOTTOM,   0.0, 0.0,    0.1, 0.9, 0.5, 0.3,
-        MAP_LEFT, MAP_TOP,      0.0, 1.0,    0.1, 0.9, 0.5, 0.3,
-        MAP_RIGHT, MAP_BOTTOM,  1.0, 0.0,    0.1, 0.9, 0.5, 0.3,
-        MAP_RIGHT, MAP_TOP,     1.0, 1.0,    0.1, 0.9, 0.5, 0.3,
+        MAP_LEFT, MAP_BOTTOM,   0.0, 0.0,    
+        MAP_LEFT, MAP_TOP,      0.0, 1.0,    
+        MAP_RIGHT, MAP_BOTTOM,  1.0, 0.0,    
+        MAP_RIGHT, MAP_TOP,     1.0, 1.0,   
      };
-    unsigned int mapStride = (2 + 2 + 4) * sizeof(float);
+    unsigned int mapStride = (2 + 2) * sizeof(float);
 
     glBindVertexArray(VAO[1]);
     glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesMap), verticesMap, GL_STATIC_DRAW);
-    // position
+
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, mapStride, (void*)0);
     glEnableVertexAttribArray(0);
-    // texture position
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, mapStride, (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    // rgba (for glass)
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, mapStride, (void*)(4 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
     unsigned mapTexture = loadImageToTexture(MAP_IMAGE_PATH);
     glBindTexture(GL_TEXTURE_2D, mapTexture);
@@ -161,7 +158,22 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Glass (from verticesMap)
+    unsigned int uColorGlass = glGetUniformLocation(basicShader, "uColor");
+
+    // Restricted Zone
+    float verticesRestrictedZone[CIRCLE_RESOLUTION * 2 + 4]; // +4 je za x i y koordinate centra kruga, i za x i y od nultog ugla
+    generateCircle(CIRCLE_RESTRICTED_ZONE_CENTER_X, CIRCLE_RESTRICTED_ZONE_CENTER_Y, CIRCLE_RESTRICTED_ZONE_RADIUS, verticesRestrictedZone, CIRCLE_RESOLUTION);
+    unsigned int circleStride = 2 * sizeof(float);
+
+    glBindVertexArray(VAO[2]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesRestrictedZone), verticesRestrictedZone, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, circleStride, (void*)0);
+    glEnableVertexAttribArray(0);
     
+    unsigned int uColorRestrictedArea = glGetUniformLocation(basicShader, "uColor");
     
     
     // createTitle();
@@ -176,7 +188,7 @@ int main() {
 
     Shader basic3dShader("basic_3d.vert", "basic_3d.frag");
     glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 8.0f, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     Model map("res/map.obj");
 
@@ -189,7 +201,6 @@ int main() {
     basic3dShader.setMat4("uV", view);
     glm::mat4 model = glm::mat4(1.0f);
 
-    //glEnable(GL_DEPTH_TEST);
     
 
     // loop
@@ -227,8 +238,15 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, mapTexture);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // already active texture shader
         glUseProgram(basicShader);
+        glUniform4f(uColorGlass, 0.6, 0.9, 0.5, 0.25);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
+        // Restricted Zone
+        draw2D();
+        glBindVertexArray(VAO[2]);
+        glUniform4f(uColorRestrictedArea, 1.0f, 0.0f, 0.0f, 0.2f);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesRestrictedZone) / (2 * sizeof(float)));
+        
         //drawTitle();
         // drawMap();
         // drawPlanes(window);

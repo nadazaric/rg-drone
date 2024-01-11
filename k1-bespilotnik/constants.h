@@ -3,8 +3,8 @@
 #include <string>
 
 constexpr const char* TITLE = "Bespilotnik";
-constexpr int WINDOW_WIDTH = 1200;
-constexpr int WINDOW_HEIGHT = 900;
+constexpr int WINDOW_WIDTH = 1100;
+constexpr int WINDOW_HEIGHT = 1100;
 
 constexpr int CIRCLE_RESOLUTION = 50;
 constexpr float CIRCLE_PLANE_RADIUS = 0.03;
@@ -47,9 +47,9 @@ constexpr float PROGRESS_BAR_BOTTOM = -0.95;
 constexpr float PROGRESS_BAR_WIDTH = 0.5;
 constexpr float PROGRESS_BAR_OFFSET = 0.0001;
 
-constexpr float CIRCLE_RESTRICTED_ZONE_RADIUS = 0.35;
-constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_X = 0.1;
-constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_Y = 0.3;
+constexpr float CIRCLE_RESTRICTED_ZONE_RADIUS = 0.42;
+constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_X = 0.0;
+constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_Y = 0.2;
 
 constexpr float MAP_LEFT = -1;
 constexpr float MAP_RIGHT = 1;
@@ -57,13 +57,13 @@ constexpr float MAP_TOP = 1;
 constexpr float MAP_BOTTOM = -1;
 
 
-constexpr unsigned int MAP_WIDTH = 400;
+constexpr unsigned int MAP_WIDTH = 300;
 constexpr unsigned int MAP_HEIGHT = 300;
 
 constexpr float TITLE_LEFT = -1.0;
-constexpr float TITLE_RIGHT = -0.6;
-constexpr float TITLE_TOP = 0.99;
-constexpr float TITLE_BOTTOM = 0.9;
+constexpr float TITLE_RIGHT = -0.5;
+constexpr float TITLE_TOP = 1;
+constexpr float TITLE_BOTTOM = 0.92;
 
-constexpr const char* MAP_IMAGE_PATH = "textures/majevica-map.png";
+constexpr const char* MAP_IMAGE_PATH = "textures/majevica-map.jpg";
 constexpr const char* TITLE_IMAGE_PATH = "textures/name.png";
