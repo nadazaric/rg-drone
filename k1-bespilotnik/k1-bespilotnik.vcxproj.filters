@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\shaders">
+      <UniqueIdentifier>{57ff6393-1c10-4ef1-bd5e-c433d9628669}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\map_drawer">
+      <UniqueIdentifier>{220c38ec-621e-42be-baee-45435e1337b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\map_drawer\shaders">
+      <UniqueIdentifier>{10716556-ea4a-497e-ac2c-69dee6851254}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\plane_drawer">
+      <UniqueIdentifier>{85fc8cca-10ce-4105-b22b-a502dfc27df4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\plane_drawer\shaders">
+      <UniqueIdentifier>{3e468ebf-cd09-403a-895c-dad052c03edc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="circle_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shader_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texture_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="title_drawer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="map_drawer.cpp">
+      <Filter>Source Files\map_drawer</Filter>
+    </ClCompile>
+    <ClCompile Include="restricted_zone_drawer.cpp">
+      <Filter>Source Files\map_drawer</Filter>
+    </ClCompile>
+    <ClCompile Include="planes_drawer.cpp">
+      <Filter>Source Files\plane_drawer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="circle_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texture_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="title_drawer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="map_drawer.h">
+      <Filter>Source Files\map_drawer</Filter>
+    </ClInclude>
+    <ClInclude Include="restricted_zone_drawer.h">
+      <Filter>Source Files\map_drawer</Filter>
+    </ClInclude>
+    <ClInclude Include="planes_drawer.h">
+      <Filter>Source Files\plane_drawer</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="basic.frag">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="basic.vert">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="glass.frag">
+      <Filter>Source Files\map_drawer\shaders</Filter>
+    </None>
+    <None Include="glass.vert">
+      <Filter>Source Files\map_drawer\shaders</Filter>
+    </None>
+    <None Include="map.frag">
+      <Filter>Source Files\map_drawer\shaders</Filter>
+    </None>
+    <None Include="map.vert">
+      <Filter>Source Files\map_drawer\shaders</Filter>
+    </None>
+    <None Include="restricted_zone.frag">
+      <Filter>Source Files\map_drawer\shaders</Filter>
+    </None>
+    <None Include="restricted_zone.vert">
+      <Filter>Source Files\map_drawer\shaders</Filter>
+    </None>
+    <None Include="indicator.frag">
+      <Filter>Source Files\plane_drawer\shaders</Filter>
+    </None>
+    <None Include="indicator.vert">
+      <Filter>Source Files\plane_drawer\shaders</Filter>
+    </None>
+    <None Include="plane.frag">
+      <Filter>Source Files\plane_drawer\shaders</Filter>
+    </None>
+    <None Include="plane.vert">
+      <Filter>Source Files\plane_drawer\shaders</Filter>
+    </None>
+    <None Include="progress_bar.frag">
+      <Filter>Source Files\plane_drawer\shaders</Filter>
+    </None>
+    <None Include="progress_bar.vert">
+      <Filter>Source Files\plane_drawer\shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
