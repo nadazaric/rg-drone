@@ -60,8 +60,8 @@ constexpr float MAP_BOTTOM = -1;
 constexpr unsigned int MAP_WIDTH = 300;
 constexpr unsigned int MAP_HEIGHT = 300;
 
-constexpr float TITLE_LEFT = -1.0;
-constexpr float TITLE_RIGHT = -0.5;
+constexpr float TITLE_LEFT = -0.95;
+constexpr float TITLE_RIGHT = -0.6;
 constexpr float TITLE_TOP = 1;
 constexpr float TITLE_BOTTOM = 0.92;
 

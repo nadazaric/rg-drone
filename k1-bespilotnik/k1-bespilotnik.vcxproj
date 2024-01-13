@@ -132,7 +132,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map_drawer.cpp" />
     <ClCompile Include="planes_drawer.cpp" />
-    <ClCompile Include="restricted_zone_drawer.cpp" />
     <ClCompile Include="shader_helper.cpp" />
     <ClCompile Include="texture_helper.cpp" />
   </ItemGroup>
@@ -143,7 +142,6 @@
     <ClInclude Include="mesh.hpp" />
     <ClInclude Include="model.hpp" />
     <ClInclude Include="planes_drawer.h" />
-    <ClInclude Include="restricted_zone_drawer.h" />
     <ClInclude Include="shader.hpp" />
     <ClInclude Include="shader_helper.h" />
     <ClInclude Include="stb_image.h" />
@@ -163,8 +161,6 @@
     <None Include="plane.vert" />
     <None Include="progress_bar.frag" />
     <None Include="progress_bar.vert" />
-    <None Include="restricted_zone.frag" />
-    <None Include="restricted_zone.vert" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="basic_3d.frag" />

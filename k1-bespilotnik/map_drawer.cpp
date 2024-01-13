@@ -1,6 +1,5 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "restricted_zone_drawer.h"
 #include "constants.h"
 #include "map_drawer.h"
 #include "shader_helper.h"
@@ -55,7 +54,6 @@ void createMap() {
     unsigned uTexLoc = glGetUniformLocation(mapShader, "uTex");
     glUniform1i(uTexLoc, 0);
 
-    createRestrictedZone();
 };
 
 void drawMap() {
@@ -73,7 +71,6 @@ void drawMap() {
     glUseProgram(glassShader);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    drawRestrictedZone();
 }
 
 void destroyMap() {
@@ -81,5 +78,4 @@ void destroyMap() {
     glDeleteBuffers(1, &VBO_MAP);
     glDeleteVertexArrays(1, &VAO_MAP);
     glDeleteProgram(mapShader);
-    destroyRestrictedZone();
 }

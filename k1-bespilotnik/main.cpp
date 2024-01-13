@@ -176,7 +176,6 @@ int main() {
     unsigned int uColorRestrictedArea = glGetUniformLocation(basicShader, "uColor");
     
     
-    // createTitle();
     // createMap();
     // createPlanes();
     // createIndicators();
@@ -188,8 +187,12 @@ int main() {
 
     Shader basic3dShader("basic_3d.vert", "basic_3d.frag");
     glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    //glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    glm::mat4 viewCamera1 = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0, 0.0, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 viewCamera2 = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    
     Model map("res/map.obj");
 
     //Render petlja
@@ -198,28 +201,54 @@ int main() {
     basic3dShader.setVec3("uViewPos", 0, 0, 5);
     basic3dShader.setVec3("uLightColor", 1, 1, 1);
     basic3dShader.setMat4("uP", projection);
-    basic3dShader.setMat4("uV", view);
-    glm::mat4 model = glm::mat4(1.0f);
-
+    // basic3dShader.setMat4("uV", view);
     
-
     // loop
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GL_TRUE);
 
-        glClearColor(0.2, 0.2, 0.2, 1.0);
+        glClearColor(0.84, 0.93, 1.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // 3D
 
         // Map
+        // draw3D();
+        // basic3dShader.use();
+        // basic3dShader.setMat4("uM", glm::mat4(1.0f));
+        // map.Draw(basic3dShader);
+
         draw3D();
 
+        // Prva kamera
+        glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
         basic3dShader.use();
+        // basic3dShader.setVec3("uLightPos", 0, 1, 3);
+        // basic3dShader.setVec3("uViewPos", 0, 0, 5);
+        // basic3dShader.setVec3("uLightColor", 1, 1, 1);
+        // basic3dShader.setMat4("uP", projection);
+        basic3dShader.setMat4("uV", viewCamera1);
+
+        // Map
         basic3dShader.setMat4("uM", glm::mat4(1.0f));
         map.Draw(basic3dShader);
+
+        // Druga kamera
+        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
+        basic3dShader.use();
+        // basic3dShader.setVec3("uLightPos", 0, 1, 3);
+        // basic3dShader.setVec3("uViewPos", 0, 0, 5);
+        // basic3dShader.setVec3("uLightColor", 1, 1, 1);
+        // basic3dShader.setMat4("uP", projection);
+        basic3dShader.setMat4("uV", viewCamera2);
+
+        // Map
+        basic3dShader.setMat4("uM", glm::mat4(1.0f));
+        map.Draw(basic3dShader);
+
+        
 
         // 2D
         
@@ -247,7 +276,6 @@ int main() {
         glUniform4f(uColorRestrictedArea, 1.0f, 0.0f, 0.0f, 0.2f);
         glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesRestrictedZone) / (2 * sizeof(float)));
         
-        //drawTitle();
         // drawMap();
         // drawPlanes(window);
         // drawIndicators(window);
@@ -260,8 +288,7 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    //destroyTitle();
+    
     // destroyMap();
     // destroyPlanes();
 
