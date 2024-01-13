@@ -186,12 +186,17 @@ int main() {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D
 
     Shader basic3dShader("basic_3d.vert", "basic_3d.frag");
-    glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(50.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
     //glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    glm::mat4 viewCamera1 = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0, 0.0, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 viewCamera2 = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    float first_airplane_x = FIRST_PLANE_CENTER_X;
+    float first_airplane_y = FIRST_PLANE_CENTER_Y;
+    float first_airplane_height = 0.1f;
+
+    glm::mat4 viewCamera1; // = glm::lookAt(glm::vec3(first_airplane_x, first_airplane_height, first_airplane_y), glm::vec3(first_airplane_x, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    //glm::mat4 viewCamera1 = glm::lookAt(glm::vec3(FIRST_PLANE_CENTER_X, 0.05f, FIRST_PLANE_CENTER_Y), glm::vec3(FIRST_PLANE_CENTER_X, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 viewCamera2 = glm::lookAt(glm::vec3(SECOND_PLANE_CENTER_X, 0.05f, SECOND_PLANE_CENTER_Y), glm::vec3(SECOND_PLANE_CENTER_X, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     
     Model map("res/map.obj");
 
@@ -208,7 +213,21 @@ int main() {
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GL_TRUE);
+        const float cameraSpeed = 0.0001f; // adjust accordingly
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            first_airplane_y -= cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            first_airplane_y += cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            first_airplane_x -= cameraSpeed; //
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            first_airplane_x += cameraSpeed; 
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+            first_airplane_height -= cameraSpeed; 
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+            first_airplane_height += cameraSpeed; 
 
+        
         glClearColor(0.84, 0.93, 1.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
@@ -229,6 +248,7 @@ int main() {
         // basic3dShader.setVec3("uViewPos", 0, 0, 5);
         // basic3dShader.setVec3("uLightColor", 1, 1, 1);
         // basic3dShader.setMat4("uP", projection);
+        viewCamera1 = glm::lookAt(glm::vec3(first_airplane_x, first_airplane_height, first_airplane_y + 1.0f), glm::vec3(first_airplane_x, first_airplane_height - 0.1, first_airplane_y + 1 - 0.2), glm::vec3(0.0f, 1.0f, 0.0f));
         basic3dShader.setMat4("uV", viewCamera1);
 
         // Map
