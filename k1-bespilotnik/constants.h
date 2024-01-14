@@ -27,6 +27,9 @@ constexpr float INACTIVE_INDICATOR_B = 0.0f;
 // Airplanes
 constexpr float MIN_HEIGHT = 0.1f;
 constexpr float MAX_HEIGHT = 1.0f;
+constexpr float AIRPLANE_R = 0.2f;
+constexpr float AIRPLANE_G = 0.5f;
+constexpr float AIRPLANE_B = 1.0f;
 
 // Progress Bar
 constexpr float PROGRESS_BAR_TOP = -0.75f;

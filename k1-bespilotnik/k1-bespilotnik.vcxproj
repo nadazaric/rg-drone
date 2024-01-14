@@ -155,8 +155,8 @@
     <None Include="map.frag" />
     <None Include="map.vert" />
     <None Include="packages.config" />
-    <None Include="plane.frag" />
-    <None Include="plane.vert" />
+    <None Include="airplane.frag" />
+    <None Include="airplane.vert" />
     <None Include="progress_bar.frag" />
     <None Include="progress_bar.vert" />
   </ItemGroup>

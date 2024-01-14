@@ -114,8 +114,26 @@ int main() {
     // Shaders
     unsigned int basicShader = createShader("basic.vert", "basic.frag");
     unsigned int textureShader = createShader("texture.vert", "texture.frag");
-    unsigned int airplaneShader = createShader("plane.vert", "plane.frag");
+    unsigned int airplaneShader = createShader("airplane.vert", "airplane.frag");
     unsigned int progressBarShader = createShader("progress_bar.vert", "progress_bar.frag");
+
+    // Uniforms
+    unsigned int uBasicShaderColor = glGetUniformLocation(basicShader, "uColor");
+    unsigned int uAirplaneShaderPosition = glGetUniformLocation(airplaneShader, "uPos");
+    unsigned int uAirplaneShaderColor = glGetUniformLocation(airplaneShader, "uColor");
+    unsigned int uProgressBarShaderColor = glGetUniformLocation(progressBarShader, "uColor");
+    unsigned int uProgressBarShaderProgress = glGetUniformLocation(progressBarShader, "uProgress");
+    unsigned int uProgressBarShaderStartPosition = glGetUniformLocation(progressBarShader, "uStartPos");
+    unsigned int uProgressBarShaderMaxWidth = glGetUniformLocation(progressBarShader, "uMaxWidth");
+
+    // Set Uniforms
+    glUseProgram(airplaneShader);
+    glUniform4f(uAirplaneShaderColor, AIRPLANE_R, AIRPLANE_G, AIRPLANE_B, 1.0);
+    glUseProgram(progressBarShader);
+    glUniform3f(uProgressBarShaderColor, AIRPLANE_R, AIRPLANE_G, AIRPLANE_B);
+    glUniform1f(uProgressBarShaderStartPosition, PROGRESS_BAR_LEFT);
+    glUniform1f(uProgressBarShaderStartPosition, PROGRESS_BAR_LEFT);
+    glUniform1f(uProgressBarShaderMaxWidth, PROGRESS_BAR_WIDTH);
 
     // Name
     float verticesName[] =
@@ -170,9 +188,6 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Glass (from verticesMap)
-    unsigned int uColorGlass = glGetUniformLocation(basicShader, "uColor");
-
     // Restricted Zone
     float verticesRestrictedZone[CIRCLE_RESOLUTION * 2 + 4]; // +4 je za x i y koordinate centra kruga, i za x i y od nultog ugla
     generateCircle(CIRCLE_RESTRICTED_ZONE_CENTER_X, CIRCLE_RESTRICTED_ZONE_CENTER_Y, CIRCLE_RESTRICTED_ZONE_RADIUS, verticesRestrictedZone, CIRCLE_RESOLUTION);
@@ -183,8 +198,6 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesRestrictedZone), verticesRestrictedZone, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, circleStride, (void*)0);
     glEnableVertexAttribArray(0);
-    
-    unsigned int uColorRestrictedArea = glGetUniformLocation(basicShader, "uColor");
 
     // Airplanes
     float verticesFirstAirplane[CIRCLE_RESOLUTION * 2 + 4];
@@ -204,9 +217,6 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSecondAirplane), verticesSecondAirplane, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, circleStride, (void*)0);
     glEnableVertexAttribArray(0);
-
-    unsigned int uPositionFirstAirplane = glGetUniformLocation(airplaneShader, "uPos");
-    unsigned int uPositionSecondAirplane = glGetUniformLocation(airplaneShader, "uPos");
 
     // Indicators
     bool isFirstAirplaneActive = false;
@@ -228,30 +238,22 @@ int main() {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, indicatorStride, (void*)0);
     glEnableVertexAttribArray(0);
 
-    unsigned int uColorIndicator = glGetUniformLocation(basicShader, "uColor");
-
     // Progress Bars
     float firstAirplaneProgress = 1.0f;
     float secondAirplaneProgress = 1.0f;
     float verticesProgressBar[] = {
-        PROGRESS_BAR_LEFT, PROGRESS_BAR_BOTTOM,                          FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
-        PROGRESS_BAR_LEFT, PROGRESS_BAR_TOP,                             FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
-        PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_BOTTOM,     FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
-        PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_TOP,        FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3
+        PROGRESS_BAR_LEFT, PROGRESS_BAR_BOTTOM,                         
+        PROGRESS_BAR_LEFT, PROGRESS_BAR_TOP,                            
+        PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_BOTTOM,    
+        PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_TOP,       
     };
-    unsigned int progressBarStride = (2 + 4) * sizeof(float);
+    unsigned int progressBarStride = 2 * sizeof(float);
 
     glBindVertexArray(VAO[6]);
     glBindBuffer(GL_ARRAY_BUFFER, VBO[6]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesProgressBar), verticesProgressBar, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, progressBarStride, (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, progressBarStride, (void*)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    unsigned int uSecondAirplaneProgress = glGetUniformLocation(progressBarShader, "uProgress");
-    unsigned int uSecondAirplaneProgressStartPos = glGetUniformLocation(progressBarShader, "uStartPos");
-    unsigned int uSecondAirplaneProgressMaxWidth = glGetUniformLocation(progressBarShader, "uMaxWidth");
     
     // createMap();
     // createPlanes();
@@ -430,58 +432,55 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, mapTexture);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // already active texture shader
         glUseProgram(basicShader);
-        glUniform4f(uColorGlass, 0.6, 0.9, 0.5, 0.25);
+        glUniform4f(uBasicShaderColor, 0.6, 0.9, 0.5, 0.25);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         // Restricted Zone
         glBindVertexArray(VAO[2]);
-        glUniform4f(uColorRestrictedArea, 1.0f, 0.0f, 0.0f, 0.2f);
+        glUniform4f(uBasicShaderColor, 1.0f, 0.0f, 0.0f, 0.2f);
         glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesRestrictedZone) / (2 * sizeof(float)));
 
         // Airplanes
         glUseProgram(airplaneShader);
         glBindVertexArray(VAO[3]);
-        glUniform2f(uPositionFirstAirplane, firstCameraPosition.x - FIRST_AIRPLANE_INITIAL_X, - firstCameraPosition.z - FIRST_AIRPLANE_INITIAL_Y);
+        glUniform2f(uAirplaneShaderPosition, firstCameraPosition.x - FIRST_AIRPLANE_INITIAL_X, - firstCameraPosition.z - FIRST_AIRPLANE_INITIAL_Y);
         glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesFirstAirplane) / (2 * sizeof(float)));
         
         glBindVertexArray(VAO[4]);
-        glUniform2f(uPositionSecondAirplane, secondCameraPosition.x - SECOND_AIRPLANE_INITIAL_X, - secondCameraPosition.z - SECOND_AIRPLANE_INITIAL_Y);
+        glUniform2f(uAirplaneShaderPosition, secondCameraPosition.x - SECOND_AIRPLANE_INITIAL_X, - secondCameraPosition.z - SECOND_AIRPLANE_INITIAL_Y);
         glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesSecondAirplane) / (2 * sizeof(float)));
 
         // Indicators
+        // Top
         topViewport();
         glUseProgram(basicShader);
         glBindVertexArray(VAO[5]);
-        if (isFirstAirplaneActive) glUniform4f(uColorIndicator, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
-        else glUniform4f(uColorIndicator, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
+        if (isFirstAirplaneActive) glUniform4f(uBasicShaderColor, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
+        else glUniform4f(uBasicShaderColor, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glBindVertexArray(VAO[6]);
-        glUniform4f(uColorRestrictedArea, FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.4f);
+        glUniform4f(uBasicShaderColor, FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.4f);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glUseProgram(progressBarShader);
-        glUniform1f(uSecondAirplaneProgress, firstAirplaneProgress);
-        glUniform1f(uSecondAirplaneProgressStartPos, PROGRESS_BAR_LEFT);
-        glUniform1f(uSecondAirplaneProgressMaxWidth, PROGRESS_BAR_WIDTH);
+        glUniform1f(uProgressBarShaderProgress, firstAirplaneProgress);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-        
+        // Bottom
         bottomViewport();
         glUseProgram(basicShader);
         glBindVertexArray(VAO[5]);
-        if (isSecondAirplaneActive) glUniform4f(uColorIndicator, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
-        else glUniform4f(uColorIndicator, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
+        if (isSecondAirplaneActive) glUniform4f(uBasicShaderColor, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
+        else glUniform4f(uBasicShaderColor, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glBindVertexArray(VAO[6]);
-        glUniform4f(uColorRestrictedArea, FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.4f);
+        glUniform4f(uBasicShaderColor, FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.4f);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glUseProgram(progressBarShader);
-        glUniform1f(uSecondAirplaneProgress, secondAirplaneProgress);
-        glUniform1f(uSecondAirplaneProgressStartPos, PROGRESS_BAR_LEFT);
-        glUniform1f(uSecondAirplaneProgressMaxWidth, PROGRESS_BAR_WIDTH);
+        glUniform1f(uProgressBarShaderProgress, secondAirplaneProgress);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         
         // drawMap();
@@ -491,9 +490,6 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    
-    // destroyMap();
-    // destroyPlanes();
 
     // Delete Textures
     glDeleteTextures(1, &nameTexture);
