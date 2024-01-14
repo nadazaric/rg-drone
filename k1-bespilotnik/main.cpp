@@ -436,8 +436,8 @@ int main() {
     glDeleteTextures(1, &mapTexture);
 
     // Delete VBO and VAO
-    glDeleteBuffers(4, VBO);
-    glDeleteVertexArrays(4, VAO);
+    glDeleteBuffers(6, VBO);
+    glDeleteVertexArrays(6, VAO);
 
     // Delete shaders
     glDeleteProgram(basicShader);
