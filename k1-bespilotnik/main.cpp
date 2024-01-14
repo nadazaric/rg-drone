@@ -97,10 +97,10 @@ int main() {
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2D
 
-    unsigned int VAO[5];
-    glGenVertexArrays(5, VAO);
-    unsigned int VBO[5];
-    glGenBuffers(5, VBO);
+    unsigned int VAO[6];
+    glGenVertexArrays(6, VAO);
+    unsigned int VBO[6];
+    glGenBuffers(6, VBO);
 
     // Shaders
     unsigned int basicShader = createShader("basic.vert", "basic.frag");
@@ -197,6 +197,26 @@ int main() {
 
     unsigned int uPositionFirstAirplane = glGetUniformLocation(airplaneShader, "uPos");
     unsigned int uPositionSecondAirplane = glGetUniformLocation(airplaneShader, "uPos");
+
+    // Indicators
+    bool isFirstAirplaneActive = false;
+    bool isSecondAirplaneActive = false;
+    float verticesIndicators[] =
+    {
+        INDICATOR_LEFT, FIRST_INDICATOR_BOTTOM,
+        INDICATOR_LEFT, INDICATOR_TOP,
+        INDICATOR_RIGHT, FIRST_INDICATOR_BOTTOM,
+        INDICATOR_RIGHT, INDICATOR_TOP,
+    };
+    unsigned int indicatorStride = 2 * sizeof(float);
+
+    glBindVertexArray(VAO[5]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[5]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesIndicators), verticesIndicators, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, indicatorStride, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    unsigned int uColorIndicator = glGetUniformLocation(basicShader, "uColor");
     
     // createMap();
     // createPlanes();
@@ -242,54 +262,66 @@ int main() {
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Keys Events
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GL_TRUE);
+
+        if (isFirstAirplaneActive)
+        {
+            // Prva kamera
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+                firstCameraPosition += CAMERA_SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
+            // pomjeranje unaprijed, odnosno u smijeru u koji kamera gleda, firstCameraFront je vektor koji označava smjer gledanja kamere,
+            // i njega mnozim sa brzinom kretanja, pa to dodam na trenutnu poziciju kamere
+            // NAPOMENA:  da bih zadrzala zeljeni pravac, moram da uzmem x i z koordinate fronta, ali z moram da vratim na 0 da
+            // ne bi moja kamera pocela da se krece prema zemlji i od zemlje umjesto naprijed i nazad
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+                firstCameraPosition -= CAMERA_SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+                firstCameraPosition -= glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * CAMERA_SPEED;
+            // pomjeranje ulijeo, glm::cross(firstCameraFront, firstCameraUp)` daje vektor normalan na povrsinu
+            // cross - daje vektorski proizvod, taj proizvod je ustvari normala na povrsinu
+            // tu normalu normalizujemo (0-1) i onda taj vektor mnozimo sa brzinom kretanja
+            // onda to sve oduzmemo/ dodamo u zavisnosti od kretanja lijevo/desno od trenutne pozicije
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+                firstCameraPosition += glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * CAMERA_SPEED; 
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+                firstCameraPosition  += CAMERA_SPEED * firstCameraUp;
+            // posto cameraUp oznacava sta je inad kamera (u ovom slucaju penjemo se po y osi, onda cameraUp ima (0,1,0) vrijednosti
+            // onda to mnozimo s brzinom i dodajemo na poziciju kamere
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+                firstCameraPosition -= CAMERA_SPEED * firstCameraUp;
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+                firstCameraYaw -= CAMERA_SENSITIVITY;
+            // posto yaw oznacava koliko idemo lijevo i desno na trenutnoj ravni, horizontalno, onda samo dodam/oduzmem ako hocu da vrsim rotaciju kamere
+            // yaw potreban kasnije u kodu za izracunavanje novog cameraFront
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+                firstCameraYaw += CAMERA_SENSITIVITY;
+        }
+
+        if (isSecondAirplaneActive)
+        {
+            // Druga kamera
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+                secondCameraPosition += CAMERA_SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+                secondCameraPosition -= CAMERA_SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+                secondCameraPosition -= glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * CAMERA_SPEED;
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+                secondCameraPosition += glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * CAMERA_SPEED;
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+                secondCameraPosition += CAMERA_SPEED * secondCameraUp;
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+                secondCameraPosition -= CAMERA_SPEED * secondCameraUp;
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) 
+                secondCameraYaw -= CAMERA_SENSITIVITY;
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) 
+                secondCameraYaw += CAMERA_SENSITIVITY;
+        }
         
-        // Prva kamera
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            firstCameraPosition += CAMERA_SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
-        // pomjeranje unaprijed, odnosno u smijeru u koji kamera gleda, firstCameraFront je vektor koji označava smjer gledanja kamere,
-        // i njega mnozim sa brzinom kretanja, pa to dodam na trenutnu poziciju kamere
-        // NAPOMENA:  da bih zadrzala zeljeni pravac, moram da uzmem x i z koordinate fronta, ali z moram da vratim na 0 da
-        // ne bi moja kamera pocela da se krece prema zemlji i od zemlje umjesto naprijed i nazad
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            firstCameraPosition -= CAMERA_SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            firstCameraPosition -= glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * CAMERA_SPEED;
-        // pomjeranje ulijeo, glm::cross(firstCameraFront, firstCameraUp)` daje vektor normalan na povrsinu
-        // cross - daje vektorski proizvod, taj proizvod je ustvari normala na povrsinu
-        // tu normalu normalizujemo (0-1) i onda taj vektor mnozimo sa brzinom kretanja
-        // onda to sve oduzmemo/ dodamo u zavisnosti od kretanja lijevo/desno od trenutne pozicije
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            firstCameraPosition += glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * CAMERA_SPEED; 
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            firstCameraPosition  += CAMERA_SPEED * firstCameraUp;
-        // posto cameraUp oznacava sta je inad kamera (u ovom slucaju penjemo se po y osi, onda cameraUp ima (0,1,0) vrijednosti
-        // onda to mnozimo s brzinom i dodajemo na poziciju kamere
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            firstCameraPosition -= CAMERA_SPEED * firstCameraUp;
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            firstCameraYaw -= CAMERA_SENSITIVITY;
-        // posto yaw oznacava koliko idemo lijevo i desno na trenutnoj ravni, horizontalno, onda samo dodam/oduzmem ako hocu da vrsim rotaciju kamere
-        // yaw potreban kasnije u kodu za izracunavanje novog cameraFront
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            firstCameraYaw += CAMERA_SENSITIVITY;
-        
-        // Druga kamera
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            secondCameraPosition += CAMERA_SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            secondCameraPosition -= CAMERA_SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-            secondCameraPosition -= glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * CAMERA_SPEED;
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-            secondCameraPosition += glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * CAMERA_SPEED;
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            secondCameraPosition += CAMERA_SPEED * secondCameraUp;
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            secondCameraPosition -= CAMERA_SPEED * secondCameraUp;
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) 
-            secondCameraYaw -= CAMERA_SENSITIVITY;
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) 
-            secondCameraYaw += CAMERA_SENSITIVITY;
+        // On/Off
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) isFirstAirplaneActive = true;
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isFirstAirplaneActive = false;
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) isSecondAirplaneActive = true;
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isSecondAirplaneActive = false;
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render
         draw3D();
@@ -367,6 +399,21 @@ int main() {
         glBindVertexArray(VAO[4]);
         glUniform2f(uPositionSecondAirplane, secondCameraPosition.x - SECOND_AIRPLANE_INITIAL_X, - secondCameraPosition.z - SECOND_AIRPLANE_INITIAL_Y);
         glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesSecondAirplane) / (2 * sizeof(float)));
+
+        // Indicators
+        glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
+        glUseProgram(basicShader);
+        glBindVertexArray(VAO[5]);
+        if (isFirstAirplaneActive) glUniform4f(uColorIndicator, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
+        else glUniform4f(uColorIndicator, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
+        glUseProgram(basicShader);
+        glBindVertexArray(VAO[5]);
+        if (isSecondAirplaneActive) glUniform4f(uColorIndicator, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
+        else glUniform4f(uColorIndicator, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         
         // drawMap();
         // drawPlanes(window);

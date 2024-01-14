@@ -28,24 +28,16 @@ constexpr float SECOND_PLANE_G = 0.5;
 constexpr float SECOND_PLANE_B = 1.0;
 constexpr float PLANE_SPEED = 0.001;
 
-constexpr float FIRST_INDICATOR_LEFT = -0.95;
-constexpr float FIRST_INDICATOR_RIGHT = -0.85;
-constexpr float FIRST_INDICATOR_TOP = -0.7;
-constexpr float FIRST_INDICATOR_BOTTOM = -0.8;
-constexpr float FIRST_INDICATOR_R = 0.4;
-constexpr float FIRST_INDICATOR_G = 0.65;
-constexpr float FIRST_INDICATOR_B = 0.0;
-constexpr float SECOND_INDICATOR_R = 0.4;
-constexpr float SECOND_INDICATOR_G = 0.65;
-constexpr float SECOND_INDICATOR_B = 0.0;
-constexpr float INACTIV_INDICATOR_R = 0.2;
-constexpr float INACTIV_INDICATOR_G = 0.2;
-constexpr float INACTIV_INDICATOR_B = 0.0;
-
-constexpr float SECOND_INDICATOR_LEFT = 0.45;
-constexpr float SECOND_INDICATOR_RIGHT = 0.55;
-constexpr float SECOND_INDICATOR_TOP = -0.7;
-constexpr float SECOND_INDICATOR_BOTTOM = -0.8;
+constexpr float INDICATOR_LEFT = -0.85f;
+constexpr float INDICATOR_RIGHT = -0.95f;
+constexpr float INDICATOR_TOP = -0.75f;
+constexpr float FIRST_INDICATOR_BOTTOM = -0.95f;
+constexpr float INDICATOR_R = 0.2f;
+constexpr float INDICATOR_G = 0.7f;
+constexpr float INDICATOR_B = 0.3f;
+constexpr float INACTIVE_INDICATOR_R = 0.0f;
+constexpr float INACTIVE_INDICATOR_G = 0.03f;
+constexpr float INACTIVE_INDICATOR_B = 0.0f;
 
 constexpr float FIRST_PROGRESS_BAR_LEFT = -0.95;
 constexpr float SECOND_PROGRESS_BAR_LEFT = 0.45;

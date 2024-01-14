@@ -92,10 +92,10 @@ void createIndicators() {
 
     float firstIndicatorVertices[] =
     {
-       FIRST_INDICATOR_LEFT, FIRST_INDICATOR_BOTTOM,
-       FIRST_INDICATOR_LEFT, FIRST_INDICATOR_TOP,
-       FIRST_INDICATOR_RIGHT, FIRST_INDICATOR_BOTTOM,
-       FIRST_INDICATOR_RIGHT, FIRST_INDICATOR_TOP,
+       INDICATOR_LEFT, FIRST_INDICATOR_BOTTOM,
+       INDICATOR_LEFT, INDICATOR_TOP,
+       INDICATOR_RIGHT, FIRST_INDICATOR_BOTTOM,
+       INDICATOR_RIGHT, INDICATOR_TOP,
     };
 
     glGenVertexArrays(1, &VAO_INDICATORS[0]);
@@ -113,10 +113,11 @@ void createIndicators() {
 
     float secondIndicatorVertices[] =
     {
-       SECOND_INDICATOR_LEFT, SECOND_INDICATOR_BOTTOM,
-       SECOND_INDICATOR_LEFT, SECOND_INDICATOR_TOP,
-       SECOND_INDICATOR_RIGHT, SECOND_INDICATOR_BOTTOM,
-       SECOND_INDICATOR_RIGHT, SECOND_INDICATOR_TOP,
+        0, 0
+       //SECOND_INDICATOR_LEFT, SECOND_INDICATOR_BOTTOM,
+       //SECOND_INDICATOR_LEFT, SECOND_INDICATOR_TOP,
+       //SECOND_INDICATOR_RIGHT, SECOND_INDICATOR_BOTTOM,
+       //SECOND_INDICATOR_RIGHT, SECOND_INDICATOR_TOP,
     };
 
     glGenVertexArrays(1, &VAO_INDICATORS[1]);
@@ -281,13 +282,13 @@ void drawIndicators(GLFWwindow* window) {
     glUseProgram(indicatorShader);
 
     // first indicator
-    if (isFirstPlaneActive) glUniform4f(uFirstIndicatorColor, FIRST_INDICATOR_R, FIRST_INDICATOR_G, FIRST_INDICATOR_B, 1.0);
-    else glUniform4f(uFirstIndicatorColor, INACTIV_INDICATOR_R, INACTIV_INDICATOR_G, INACTIV_INDICATOR_B, 1.0);
+    if (isFirstPlaneActive) glUniform4f(uFirstIndicatorColor, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
+    else glUniform4f(uFirstIndicatorColor, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
     glBindVertexArray(VAO_INDICATORS[0]);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     // second indicator
-    if (isSecondPlaneActive) glUniform4f(uSecondIndicatorColor, SECOND_INDICATOR_R, SECOND_INDICATOR_G, SECOND_INDICATOR_B, 1.0);
-    else glUniform4f(uSecondIndicatorColor, INACTIV_INDICATOR_R, INACTIV_INDICATOR_G, INACTIV_INDICATOR_B, 1.0);
+    //if (isSecondPlaneActive) glUniform4f(uSecondIndicatorColor, SECOND_INDICATOR_R, SECOND_INDICATOR_G, SECOND_INDICATOR_B, 1.0);
+    //else glUniform4f(uSecondIndicatorColor, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
     glBindVertexArray(VAO_INDICATORS[1]);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
