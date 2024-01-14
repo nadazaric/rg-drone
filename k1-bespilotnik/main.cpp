@@ -196,7 +196,17 @@ int main() {
 
     glm::mat4 viewCamera1; // = glm::lookAt(glm::vec3(first_airplane_x, first_airplane_height, first_airplane_y), glm::vec3(first_airplane_x, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     //glm::mat4 viewCamera1 = glm::lookAt(glm::vec3(FIRST_PLANE_CENTER_X, 0.05f, FIRST_PLANE_CENTER_Y), glm::vec3(FIRST_PLANE_CENTER_X, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 viewCamera2 = glm::lookAt(glm::vec3(SECOND_PLANE_CENTER_X, 0.05f, SECOND_PLANE_CENTER_Y), glm::vec3(SECOND_PLANE_CENTER_X, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+    float secondPlaneHeight = 0.1;
+    glm::vec3 secondCameraPosition = glm::vec3(SECOND_PLANE_CENTER_X, secondPlaneHeight, SECOND_PLANE_CENTER_Y + 1.0f);
+    glm::vec3 secondCameraFront = glm::vec3(0.0f, 0.0f, 0.1f);
+    glm::vec3 secondCameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    float yaw = -90.0f;
+    float pitch = 0.0f;
+    float sensitivity = 0.02f;
+
+    glm::mat4 viewCamera2; //= glm::lookAt(glm::vec3(SECOND_PLANE_CENTER_X, 0.05f, SECOND_PLANE_CENTER_Y), glm::vec3(SECOND_PLANE_CENTER_X, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     
     Model map("res/map.obj");
 
@@ -234,20 +244,12 @@ int main() {
         // 3D
 
         // Map
-        // draw3D();
-        // basic3dShader.use();
-        // basic3dShader.setMat4("uM", glm::mat4(1.0f));
-        // map.Draw(basic3dShader);
 
         draw3D();
 
         // Prva kamera
         glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
         basic3dShader.use();
-        // basic3dShader.setVec3("uLightPos", 0, 1, 3);
-        // basic3dShader.setVec3("uViewPos", 0, 0, 5);
-        // basic3dShader.setVec3("uLightColor", 1, 1, 1);
-        // basic3dShader.setMat4("uP", projection);
         viewCamera1 = glm::lookAt(glm::vec3(first_airplane_x, first_airplane_height, first_airplane_y + 1.0f), glm::vec3(first_airplane_x, first_airplane_height - 0.1, first_airplane_y + 1 - 0.2), glm::vec3(0.0f, 1.0f, 0.0f));
         basic3dShader.setMat4("uV", viewCamera1);
 
@@ -255,13 +257,38 @@ int main() {
         basic3dShader.setMat4("uM", glm::mat4(1.0f));
         map.Draw(basic3dShader);
 
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            secondCameraPosition += cameraSpeed * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z); // da bih zadrzala zeljeni pravac, moram da uzmem x i z koordinate fronta, ali z moram da vratim na 0 da ne bi moja kamera pocela da se krece prema zemlji i od zemlje umjesto naprijed i nazad
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            secondCameraPosition -= cameraSpeed * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            secondCameraPosition -= glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            secondCameraPosition += glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            secondCameraPosition += cameraSpeed * secondCameraUp;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            secondCameraPosition -= cameraSpeed * secondCameraUp;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) 
+            yaw -= sensitivity;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) 
+            yaw += sensitivity;
+
+        // Ograničavanje nagiba kamere
+        pitch = glm::clamp(pitch, -90.0f, -35.0f);
+        
+        // Računanje novog vektora gledišta
+        glm::vec3 front;
+        front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        front.y = sin(glm::radians(pitch));
+        front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        secondCameraFront = glm::normalize(front);
+        std::cout << pitch << "\n";
+
         // Druga kamera
         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
         basic3dShader.use();
-        // basic3dShader.setVec3("uLightPos", 0, 1, 3);
-        // basic3dShader.setVec3("uViewPos", 0, 0, 5);
-        // basic3dShader.setVec3("uLightColor", 1, 1, 1);
-        // basic3dShader.setMat4("uP", projection);
+        viewCamera2 = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
         basic3dShader.setMat4("uV", viewCamera2);
 
         // Map
