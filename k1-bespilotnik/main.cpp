@@ -291,8 +291,8 @@ int main() {
             // onda to sve oduzmemo/ dodamo u zavisnosti od kretanja lijevo/desno od trenutne pozicije
             if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
                 firstCameraPosition += glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * CAMERA_SPEED; 
-            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-                firstCameraPosition  += CAMERA_SPEED * firstCameraUp;
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
+                if (firstCameraPosition.y <= MAX_HEIGHT) firstCameraPosition  += CAMERA_SPEED * firstCameraUp;
             // posto cameraUp oznacava sta je inad kamera (u ovom slucaju penjemo se po y osi, onda cameraUp ima (0,1,0) vrijednosti
             // onda to mnozimo s brzinom i dodajemo na poziciju kamere
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -303,6 +303,7 @@ int main() {
             // yaw potreban kasnije u kodu za izracunavanje novog cameraFront
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
                 firstCameraYaw += CAMERA_SENSITIVITY;
+                
         }
 
         if (isSecondAirplaneActive)
@@ -317,13 +318,15 @@ int main() {
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
                 secondCameraPosition += glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * CAMERA_SPEED;
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-                secondCameraPosition += CAMERA_SPEED * secondCameraUp;
+                if (secondCameraPosition.y <= MAX_HEIGHT) secondCameraPosition += CAMERA_SPEED * secondCameraUp;
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
                 secondCameraPosition -= CAMERA_SPEED * secondCameraUp;
-            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) 
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
                 secondCameraYaw -= CAMERA_SENSITIVITY;
-            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) 
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
                 secondCameraYaw += CAMERA_SENSITIVITY;
+            }
+                
         }
         
         // On/Off

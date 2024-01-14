@@ -12,6 +12,22 @@ constexpr float CAMERA_SENSITIVITY = 0.2f;
 constexpr float CAMERA_SPEED = 0.001f;
 constexpr float CAMERA_ANGLE = 30.0f;
 
+// Indicators
+constexpr float INDICATOR_LEFT = -0.85f;
+constexpr float INDICATOR_RIGHT = -0.95f;
+constexpr float INDICATOR_TOP = -0.75f;
+constexpr float FIRST_INDICATOR_BOTTOM = -0.95f;
+constexpr float INDICATOR_R = 0.2f;
+constexpr float INDICATOR_G = 0.7f;
+constexpr float INDICATOR_B = 0.3f;
+constexpr float INACTIVE_INDICATOR_R = 0.0f;
+constexpr float INACTIVE_INDICATOR_G = 0.03f;
+constexpr float INACTIVE_INDICATOR_B = 0.0f;
+
+// Airplanes
+constexpr float MIN_HEIGHT = 0.1f;
+constexpr float MAX_HEIGHT = 1.0f;
+
 constexpr int CIRCLE_RESOLUTION = 50;
 constexpr float CIRCLE_PLANE_RADIUS = 0.03;
 constexpr float FIRST_AIRPLANE_INITIAL_X = -0.7f;
@@ -27,17 +43,6 @@ constexpr float SECOND_PLANE_R = 0.2;
 constexpr float SECOND_PLANE_G = 0.5;
 constexpr float SECOND_PLANE_B = 1.0;
 constexpr float PLANE_SPEED = 0.001;
-
-constexpr float INDICATOR_LEFT = -0.85f;
-constexpr float INDICATOR_RIGHT = -0.95f;
-constexpr float INDICATOR_TOP = -0.75f;
-constexpr float FIRST_INDICATOR_BOTTOM = -0.95f;
-constexpr float INDICATOR_R = 0.2f;
-constexpr float INDICATOR_G = 0.7f;
-constexpr float INDICATOR_B = 0.3f;
-constexpr float INACTIVE_INDICATOR_R = 0.0f;
-constexpr float INACTIVE_INDICATOR_G = 0.03f;
-constexpr float INACTIVE_INDICATOR_B = 0.0f;
 
 constexpr float FIRST_PROGRESS_BAR_LEFT = -0.95;
 constexpr float SECOND_PROGRESS_BAR_LEFT = 0.45;
