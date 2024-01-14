@@ -187,118 +187,131 @@ int main() {
 
     Shader basic3dShader("basic_3d.vert", "basic_3d.frag");
     glm::mat4 projection = glm::perspective(glm::radians(50.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-    //glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    glm::mat4 firstCameraView;
+    glm::vec3 firstCameraPosition = glm::vec3(FIRST_AIRPLANE_INITIAL_X, FIRST_AIRPLANE_INITIAL_HEIGHT, FIRST_AIRPLANE_INITIAL_Y + 1.0f);
+    glm::vec3 firstCameraFront = glm::vec3(0.0f, 0.0f, 0.1f); // vektor koji odredjuje smijer gledanja kamere
+    glm::vec3 firstCameraUp = glm::vec3(0.0f, 1.0f, 0.0f); // znaci da je "gore" usmjereno prema pozitivnom y-smjeru (oznacava sta je gore u odnosu na kameru)
+    float firstCameraYaw = -90.0f; // vrijednost "skretanja" koliko idemo gledamo ulijevo ili udesno po horizontali (yaw value which represents the magnitude we're looking to the left or to the right)
+    float firstCameraPitch = 0.0f; // koliko gledamo gore/dole (angle that depicts how much we're looking up or down)
 
-    float first_airplane_x = FIRST_PLANE_CENTER_X;
-    float first_airplane_y = FIRST_PLANE_CENTER_Y;
-    float first_airplane_height = 0.1f;
-
-    glm::mat4 viewCamera1; // = glm::lookAt(glm::vec3(first_airplane_x, first_airplane_height, first_airplane_y), glm::vec3(first_airplane_x, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    //glm::mat4 viewCamera1 = glm::lookAt(glm::vec3(FIRST_PLANE_CENTER_X, 0.05f, FIRST_PLANE_CENTER_Y), glm::vec3(FIRST_PLANE_CENTER_X, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-
-    float secondPlaneHeight = 0.1;
-    glm::vec3 secondCameraPosition = glm::vec3(SECOND_PLANE_CENTER_X, secondPlaneHeight, SECOND_PLANE_CENTER_Y + 1.0f);
+    glm::mat4 secondCameraView;
+    glm::vec3 secondCameraPosition = glm::vec3(SECOND_AIRPLANE_INITIAL_X, SECOND_AIRPLANE_INITIAL_HEIGHT, SECOND_AIRPLANE_INITIAL_Y + 1.0f);
     glm::vec3 secondCameraFront = glm::vec3(0.0f, 0.0f, 0.1f);
     glm::vec3 secondCameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    float yaw = -90.0f;
-    float pitch = 0.0f;
-    float sensitivity = 0.02f;
-
-    glm::mat4 viewCamera2; //= glm::lookAt(glm::vec3(SECOND_PLANE_CENTER_X, 0.05f, SECOND_PLANE_CENTER_Y), glm::vec3(SECOND_PLANE_CENTER_X, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    float secondCameraYaw = -90.0f;
+    float secondCameraPitch = 0.0f;
     
     Model map("res/map.obj");
 
-    //Render petlja
+    // Postavi svjetlo i projekciju
     basic3dShader.use();
     basic3dShader.setVec3("uLightPos", 0, 1, 3);
     basic3dShader.setVec3("uViewPos", 0, 0, 5);
     basic3dShader.setVec3("uLightColor", 1, 1, 1);
     basic3dShader.setMat4("uP", projection);
-    // basic3dShader.setMat4("uV", view);
     
-    // loop
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Loop
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, GL_TRUE);
-        const float cameraSpeed = 0.0001f; // adjust accordingly
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            first_airplane_y -= cameraSpeed;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            first_airplane_y += cameraSpeed;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            first_airplane_x -= cameraSpeed; //
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            first_airplane_x += cameraSpeed; 
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-            first_airplane_height -= cameraSpeed; 
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-            first_airplane_height += cameraSpeed; 
-
-        
-        glClearColor(0.84, 0.93, 1.0, 1.0);
+        glClearColor(0.84f, 0.93f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        // 3D
-
-        // Map
-
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Keys Events
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, GL_TRUE);
+        
+        // Prva kamera
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            firstCameraPosition += CAMERA_SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
+        // pomjeranje unaprijed, odnosno u smijeru u koji kamera gleda, firstCameraFront je vektor koji označava smjer gledanja kamere,
+        // i njega mnozim sa brzinom kretanja, pa to dodam na trenutnu poziciju kamere
+        // NAPOMENA:  da bih zadrzala zeljeni pravac, moram da uzmem x i z koordinate fronta, ali z moram da vratim na 0 da
+        // ne bi moja kamera pocela da se krece prema zemlji i od zemlje umjesto naprijed i nazad
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            firstCameraPosition -= CAMERA_SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            firstCameraPosition -= glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * CAMERA_SPEED;
+        // pomjeranje ulijeo, glm::cross(firstCameraFront, firstCameraUp)` daje vektor normalan na povrsinu
+        // cross - daje vektorski proizvod, taj proizvod je ustvari normala na povrsinu
+        // tu normalu normalizujemo (0-1) i onda taj vektor mnozimo sa brzinom kretanja
+        // onda to sve oduzmemo/ dodamo u zavisnosti od kretanja lijevo/desno od trenutne pozicije
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            firstCameraPosition += glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * CAMERA_SPEED; 
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            firstCameraPosition  += CAMERA_SPEED * firstCameraUp;
+        // posto cameraUp oznacava sta je inad kamera (u ovom slucaju penjemo se po y osi, onda cameraUp ima (0,1,0) vrijednosti
+        // onda to mnozimo s brzinom i dodajemo na poziciju kamere
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            firstCameraPosition -= CAMERA_SPEED * firstCameraUp;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            firstCameraYaw -= CAMERA_SENSITIVITY;
+        // posto yaw oznacava koliko idemo lijevo i desno na trenutnoj ravni, horizontalno, onda samo dodam/oduzmem ako hocu da vrsim rotaciju kamere
+        // yaw potreban kasnije u kodu za izracunavanje novog cameraFront
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            firstCameraYaw += CAMERA_SENSITIVITY;
+        
+        // Druga kamera
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            secondCameraPosition += CAMERA_SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            secondCameraPosition -= CAMERA_SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            secondCameraPosition -= glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * CAMERA_SPEED;
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            secondCameraPosition += glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * CAMERA_SPEED;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            secondCameraPosition += CAMERA_SPEED * secondCameraUp;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            secondCameraPosition -= CAMERA_SPEED * secondCameraUp;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) 
+            secondCameraYaw -= CAMERA_SENSITIVITY;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) 
+            secondCameraYaw += CAMERA_SENSITIVITY;
+        
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render
         draw3D();
 
-        // Prva kamera
-        glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
-        basic3dShader.use();
-        viewCamera1 = glm::lookAt(glm::vec3(first_airplane_x, first_airplane_height, first_airplane_y + 1.0f), glm::vec3(first_airplane_x, first_airplane_height - 0.1, first_airplane_y + 1 - 0.2), glm::vec3(0.0f, 1.0f, 0.0f));
-        basic3dShader.setMat4("uV", viewCamera1);
-
-        // Map
-        basic3dShader.setMat4("uM", glm::mat4(1.0f));
-        map.Draw(basic3dShader);
-
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            secondCameraPosition += cameraSpeed * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z); // da bih zadrzala zeljeni pravac, moram da uzmem x i z koordinate fronta, ali z moram da vratim na 0 da ne bi moja kamera pocela da se krece prema zemlji i od zemlje umjesto naprijed i nazad
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            secondCameraPosition -= cameraSpeed * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-            secondCameraPosition -= glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * cameraSpeed;
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-            secondCameraPosition += glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * cameraSpeed;
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            secondCameraPosition += cameraSpeed * secondCameraUp;
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            secondCameraPosition -= cameraSpeed * secondCameraUp;
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) 
-            yaw -= sensitivity;
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) 
-            yaw += sensitivity;
-
-        // Ograničavanje nagiba kamere
-        pitch = glm::clamp(pitch, -90.0f, -35.0f);
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ First cam
         
+        firstCameraPitch = glm::clamp(firstCameraPitch, -90.0f, -CAMERA_ANGLE); // Ograničavanje nagiba kamere
         // Računanje novog vektora gledišta
         glm::vec3 front;
-        front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        front.y = sin(glm::radians(pitch));
-        front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        secondCameraFront = glm::normalize(front);
-        std::cout << pitch << "\n";
+        front.x = cos(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch)); // yaw koliko smo lijevo/desno stepeni gledajuci po horizontali (koliko smo rotirani)
+        front.y = sin(glm::radians(firstCameraPitch)); // nagib kamere
+        front.z = sin(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch));
+        firstCameraFront = glm::normalize(front);
 
-        // Druga kamera
-        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
+        // Postavljanje kamere na zeljenu poziciju
+        glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
         basic3dShader.use();
-        viewCamera2 = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
-        basic3dShader.setMat4("uV", viewCamera2);
-
-        // Map
+        firstCameraView = glm::lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
+        basic3dShader.setMat4("uV", firstCameraView);
+        
+        // Prikaz mape za prvu kameru
         basic3dShader.setMat4("uM", glm::mat4(1.0f));
         map.Draw(basic3dShader);
 
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Second cam
         
+        secondCameraPitch = glm::clamp(secondCameraPitch, -90.0f, -CAMERA_ANGLE); // Ograničavanje nagiba kamere
+        // Računanje novog vektora gledišta
+        front.x = cos(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
+        front.y = sin(glm::radians(secondCameraPitch));
+        front.z = sin(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
+        secondCameraFront = glm::normalize(front);
+        
+        // Postavljanje kamere na zeljenu poziciju
+        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
+        basic3dShader.use();
+        secondCameraView = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
+        basic3dShader.setMat4("uV", secondCameraView);
+        
+        // Prikaz mape za drugu kameru
+        basic3dShader.setMat4("uM", glm::mat4(1.0f));
+        map.Draw(basic3dShader);
 
-        // 2D
-        
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2D Render
         // Name
         drawName2D();
         glUseProgram(textureShader);

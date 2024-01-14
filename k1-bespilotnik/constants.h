@@ -2,16 +2,24 @@
 #include <iostream>
 #include <string>
 
+// Global
 constexpr const char* TITLE = "Bespilotnik";
 constexpr int WINDOW_WIDTH = 1100;
 constexpr int WINDOW_HEIGHT = 1100;
 
+// Camera
+constexpr float CAMERA_SENSITIVITY = 0.02f;
+constexpr float CAMERA_SPEED = 0.0001f;
+constexpr float CAMERA_ANGLE = 30.0f;
+
 constexpr int CIRCLE_RESOLUTION = 50;
 constexpr float CIRCLE_PLANE_RADIUS = 0.03;
-constexpr float FIRST_PLANE_CENTER_X = -0.7;
-constexpr float FIRST_PLANE_CENTER_Y = -0.5;
-constexpr float SECOND_PLANE_CENTER_X = 0.7;
-constexpr float SECOND_PLANE_CENTER_Y = -0.5;
+constexpr float FIRST_AIRPLANE_INITIAL_X = -0.7f;
+constexpr float FIRST_AIRPLANE_INITIAL_Y = -0.5f;
+constexpr float FIRST_AIRPLANE_INITIAL_HEIGHT = 0.1f;
+constexpr float SECOND_AIRPLANE_INITIAL_X = 0.7f;
+constexpr float SECOND_AIRPLANE_INITIAL_Y = -0.5f;
+constexpr float SECOND_AIRPLANE_INITIAL_HEIGHT = 0.1f;
 constexpr float FIRST_PLANE_R = 0.2;
 constexpr float FIRST_PLANE_G = 0.5;
 constexpr float FIRST_PLANE_B = 1.0;

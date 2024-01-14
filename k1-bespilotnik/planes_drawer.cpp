@@ -41,8 +41,8 @@ bool isInRestricted(float x, float y) {
 bool isColision() {
     if (!isFirstPlaneActive || !isSecondPlaneActive) return false; //ako je jedan prizemljen moze letjeti druga iznad nje
     double distance = std::sqrt(
-        std::pow((firstPlaneX + FIRST_PLANE_CENTER_X) - (secondPlaneX + SECOND_PLANE_CENTER_X), 2) +
-        std::pow((firstPlaneY + FIRST_PLANE_CENTER_Y) - (secondPlaneY + SECOND_PLANE_CENTER_Y), 2));
+        std::pow((firstPlaneX + FIRST_AIRPLANE_INITIAL_X) - (secondPlaneX + SECOND_AIRPLANE_INITIAL_X), 2) +
+        std::pow((firstPlaneY + FIRST_AIRPLANE_INITIAL_Y) - (secondPlaneY + SECOND_AIRPLANE_INITIAL_Y), 2));
     bool isColision = distance < 2 * CIRCLE_PLANE_RADIUS;
     if (isColision) {
         destroyFirstPlane();
@@ -55,8 +55,8 @@ void createPlanes() {
 
     planeShader = createShader("plane.vert", "plane.frag");
 
-    generateCircle(FIRST_PLANE_CENTER_X, FIRST_PLANE_CENTER_Y, CIRCLE_PLANE_RADIUS, firstPlaneVerteces, CIRCLE_RESOLUTION);
-    generateCircle(SECOND_PLANE_CENTER_X, SECOND_PLANE_CENTER_Y, CIRCLE_PLANE_RADIUS, secondPlaneVerteces, CIRCLE_RESOLUTION);
+    generateCircle(FIRST_AIRPLANE_INITIAL_X, FIRST_AIRPLANE_INITIAL_Y, CIRCLE_PLANE_RADIUS, firstPlaneVerteces, CIRCLE_RESOLUTION);
+    generateCircle(SECOND_AIRPLANE_INITIAL_X, SECOND_AIRPLANE_INITIAL_Y, CIRCLE_PLANE_RADIUS, secondPlaneVerteces, CIRCLE_RESOLUTION);
 
     // first plane
     glGenVertexArrays(1, &VAO_PLANE[0]);
@@ -186,25 +186,25 @@ void createProgressBar() {
 void firstPlaneMoveCommands(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        if ((firstPlaneY + FIRST_PLANE_CENTER_Y > MAP_TOP) || isInRestricted(firstPlaneX + FIRST_PLANE_CENTER_X, firstPlaneY + FIRST_PLANE_CENTER_Y) || isColision())
+        if ((firstPlaneY + FIRST_AIRPLANE_INITIAL_Y > MAP_TOP) || isInRestricted(firstPlaneX + FIRST_AIRPLANE_INITIAL_X, firstPlaneY + FIRST_AIRPLANE_INITIAL_Y) || isColision())
             destroyFirstPlane();
         else firstPlaneY += PLANE_SPEED;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        if ((firstPlaneY + FIRST_PLANE_CENTER_Y < MAP_BOTTOM) || isInRestricted(firstPlaneX + FIRST_PLANE_CENTER_X, firstPlaneY + FIRST_PLANE_CENTER_Y) || isColision())
+        if ((firstPlaneY + FIRST_AIRPLANE_INITIAL_Y < MAP_BOTTOM) || isInRestricted(firstPlaneX + FIRST_AIRPLANE_INITIAL_X, firstPlaneY + FIRST_AIRPLANE_INITIAL_Y) || isColision())
             destroyFirstPlane();
         else firstPlaneY -= PLANE_SPEED;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        if ((firstPlaneX + FIRST_PLANE_CENTER_X > MAP_RIGHT) || isInRestricted(firstPlaneX + FIRST_PLANE_CENTER_X, firstPlaneY + FIRST_PLANE_CENTER_Y) || isColision())
+        if ((firstPlaneX + FIRST_AIRPLANE_INITIAL_X > MAP_RIGHT) || isInRestricted(firstPlaneX + FIRST_AIRPLANE_INITIAL_X, firstPlaneY + FIRST_AIRPLANE_INITIAL_Y) || isColision())
             destroyFirstPlane();
         else firstPlaneX += PLANE_SPEED;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        if ((firstPlaneX + FIRST_PLANE_CENTER_X < MAP_LEFT) || isInRestricted(firstPlaneX + FIRST_PLANE_CENTER_X, firstPlaneY + FIRST_PLANE_CENTER_Y) || isColision())
+        if ((firstPlaneX + FIRST_AIRPLANE_INITIAL_X < MAP_LEFT) || isInRestricted(firstPlaneX + FIRST_AIRPLANE_INITIAL_X, firstPlaneY + FIRST_AIRPLANE_INITIAL_Y) || isColision())
             destroyFirstPlane();
         else firstPlaneX -= PLANE_SPEED;
     }
@@ -222,25 +222,25 @@ void firstPlaneActivationCommand(GLFWwindow* window) {
 void secondPlaneMoveCommands(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        if ((secondPlaneY + SECOND_PLANE_CENTER_Y > MAP_TOP) || isInRestricted(secondPlaneX + SECOND_PLANE_CENTER_X, secondPlaneY + SECOND_PLANE_CENTER_Y) || isColision())
+        if ((secondPlaneY + SECOND_AIRPLANE_INITIAL_Y > MAP_TOP) || isInRestricted(secondPlaneX + SECOND_AIRPLANE_INITIAL_X, secondPlaneY + SECOND_AIRPLANE_INITIAL_Y) || isColision())
             destroySecondPlane();
         else secondPlaneY += PLANE_SPEED;
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        if ((secondPlaneY + SECOND_PLANE_CENTER_Y < MAP_BOTTOM) || isInRestricted(secondPlaneX + SECOND_PLANE_CENTER_X, secondPlaneY + SECOND_PLANE_CENTER_Y) || isColision())
+        if ((secondPlaneY + SECOND_AIRPLANE_INITIAL_Y < MAP_BOTTOM) || isInRestricted(secondPlaneX + SECOND_AIRPLANE_INITIAL_X, secondPlaneY + SECOND_AIRPLANE_INITIAL_Y) || isColision())
             destroySecondPlane();
         else secondPlaneY -= PLANE_SPEED;
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        if ((secondPlaneX + SECOND_PLANE_CENTER_X > MAP_RIGHT) || isInRestricted(secondPlaneX + SECOND_PLANE_CENTER_X, secondPlaneY + SECOND_PLANE_CENTER_Y) || isColision())
+        if ((secondPlaneX + SECOND_AIRPLANE_INITIAL_X > MAP_RIGHT) || isInRestricted(secondPlaneX + SECOND_AIRPLANE_INITIAL_X, secondPlaneY + SECOND_AIRPLANE_INITIAL_Y) || isColision())
             destroySecondPlane();
         else secondPlaneX += PLANE_SPEED;
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        if ((secondPlaneX + SECOND_PLANE_CENTER_X < MAP_LEFT) || isInRestricted(secondPlaneX + SECOND_PLANE_CENTER_X, secondPlaneY + SECOND_PLANE_CENTER_Y) || isColision())
+        if ((secondPlaneX + SECOND_AIRPLANE_INITIAL_X < MAP_LEFT) || isInRestricted(secondPlaneX + SECOND_AIRPLANE_INITIAL_X, secondPlaneY + SECOND_AIRPLANE_INITIAL_Y) || isColision())
             destroySecondPlane();
         else secondPlaneX -= PLANE_SPEED;
     }
