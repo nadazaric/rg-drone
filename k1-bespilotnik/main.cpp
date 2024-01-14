@@ -50,20 +50,29 @@ static unsigned loadImageToTexture(const char* filePath) {
     }
 }
 
-void draw2D() {
+void topViewport() {
+    glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
+}
+
+void bottomViewport() {
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2);    
+}
+
+void mapViewport(){
     glViewport(WINDOW_WIDTH - MAP_WIDTH, 0, MAP_WIDTH, MAP_HEIGHT);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_SCISSOR_TEST);
-    glDisable(GL_CULL_FACE);
 }
-void drawName2D() {
+
+void fullViewport() {
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+}
+
+void draw2D() {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
     glDisable(GL_CULL_FACE);
 }
+
 void draw3D() {
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
     glEnable(GL_CULL_FACE);
@@ -326,48 +335,45 @@ int main() {
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render
         draw3D();
 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ First cam
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Top Window
+        topViewport();
+        basic3dShader.use();
         
         firstCameraPitch = glm::clamp(firstCameraPitch, -90.0f, -CAMERA_ANGLE); // Ograničavanje nagiba kamere
-        // Računanje novog vektora gledišta
-        glm::vec3 front;
+        glm::vec3 front; // Računanje novog vektora gledišta
         front.x = cos(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch)); // yaw koliko smo lijevo/desno stepeni gledajuci po horizontali (koliko smo rotirani)
         front.y = sin(glm::radians(firstCameraPitch)); // nagib kamere
         front.z = sin(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch));
-        firstCameraFront = glm::normalize(front);
-
-        // Postavljanje kamere na zeljenu poziciju
-        glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
-        basic3dShader.use();
-        firstCameraView = glm::lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
+        firstCameraFront = normalize(front);
+        
+        firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
         basic3dShader.setMat4("uV", firstCameraView);
         
-        // Prikaz mape za prvu kameru
-        basic3dShader.setMat4("uM", glm::mat4(1.0f));
+        basic3dShader.setMat4("uM", glm::mat4(1.0f)); // Prikaz mape za prvu kameru
         map.Draw(basic3dShader);
 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Second cam
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bottom Window
+        bottomViewport();
         
-        secondCameraPitch = glm::clamp(secondCameraPitch, -90.0f, -CAMERA_ANGLE); // Ograničavanje nagiba kamere
         // Računanje novog vektora gledišta
+        secondCameraPitch = glm::clamp(secondCameraPitch, -90.0f, -CAMERA_ANGLE);
         front.x = cos(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
         front.y = sin(glm::radians(secondCameraPitch));
         front.z = sin(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
         secondCameraFront = glm::normalize(front);
         
         // Postavljanje kamere na zeljenu poziciju
-        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
-        basic3dShader.use();
         secondCameraView = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
         basic3dShader.setMat4("uV", secondCameraView);
         
-        // Prikaz mape za drugu kameru
         basic3dShader.setMat4("uM", glm::mat4(1.0f));
         map.Draw(basic3dShader);
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2D Render
+        draw2D();
+        
         // Name
-        drawName2D();
+        fullViewport();
         glUseProgram(textureShader);
         glBindVertexArray(VAO[0]);
         glActiveTexture(GL_TEXTURE0);
@@ -375,7 +381,7 @@ int main() {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         // Map
-        draw2D();
+        mapViewport();
         glBindVertexArray(VAO[1]);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, mapTexture);
@@ -385,7 +391,6 @@ int main() {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         // Restricted Zone
-        draw2D();
         glBindVertexArray(VAO[2]);
         glUniform4f(uColorRestrictedArea, 1.0f, 0.0f, 0.0f, 0.2f);
         glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesRestrictedZone) / (2 * sizeof(float)));
@@ -401,14 +406,14 @@ int main() {
         glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesSecondAirplane) / (2 * sizeof(float)));
 
         // Indicators
-        glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
+        topViewport();
         glUseProgram(basicShader);
         glBindVertexArray(VAO[5]);
         if (isFirstAirplaneActive) glUniform4f(uColorIndicator, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
         else glUniform4f(uColorIndicator, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
+        bottomViewport();
         glUseProgram(basicShader);
         glBindVertexArray(VAO[5]);
         if (isSecondAirplaneActive) glUniform4f(uColorIndicator, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
@@ -416,13 +421,8 @@ int main() {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         
         // drawMap();
-        // drawPlanes(window);
-        // drawIndicators(window);
+        // drawPlanes(window); 
         // drawProgressBars(window);
-
-        // glBindBuffer(GL_ARRAY_BUFFER, 0);
-        // glBindVertexArray(0);
-        // glUseProgram(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
