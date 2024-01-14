@@ -9,5 +9,5 @@ uniform vec3 uColor;
 void main()
 {
 	gl_Position = vec4(inPos + uPos, 0.0, 1.0);
-	chCol = vec4(uColor.rgb, 1.0);
+	chCol = vec4(1.0, 0.0, 0.0, 1.0);
 }

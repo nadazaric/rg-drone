@@ -97,14 +97,15 @@ int main() {
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2D
 
-    unsigned int VAO[4];
-    glGenVertexArrays(4, VAO);
-    unsigned int VBO[4];
-    glGenBuffers(4, VBO);
+    unsigned int VAO[5];
+    glGenVertexArrays(5, VAO);
+    unsigned int VBO[5];
+    glGenBuffers(5, VBO);
 
     // Shaders
     unsigned int basicShader = createShader("basic.vert", "basic.frag");
     unsigned int textureShader = createShader("texture.vert", "texture.frag");
+    unsigned int airplaneShader = createShader("plane.vert", "plane.frag");
 
     // Name
     float verticesName[] =
@@ -174,7 +175,28 @@ int main() {
     glEnableVertexAttribArray(0);
     
     unsigned int uColorRestrictedArea = glGetUniformLocation(basicShader, "uColor");
+
+    // Airplanes
+    float verticesFirstAirplane[CIRCLE_RESOLUTION * 2 + 4];
+    generateCircle(FIRST_AIRPLANE_INITIAL_X, FIRST_AIRPLANE_INITIAL_Y, CIRCLE_PLANE_RADIUS, verticesFirstAirplane, CIRCLE_RESOLUTION);
+
+    glBindVertexArray(VAO[3]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[3]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesFirstAirplane), verticesFirstAirplane, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, circleStride, (void*)0);
+    glEnableVertexAttribArray(0);
     
+    float verticesSecondAirplane[CIRCLE_RESOLUTION * 2 + 4];
+    generateCircle(SECOND_AIRPLANE_INITIAL_X, SECOND_AIRPLANE_INITIAL_Y, CIRCLE_PLANE_RADIUS, verticesSecondAirplane, CIRCLE_RESOLUTION);
+
+    glBindVertexArray(VAO[4]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSecondAirplane), verticesSecondAirplane, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, circleStride, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    unsigned int uPositionFirstAirplane = glGetUniformLocation(airplaneShader, "uPos");
+    unsigned int uPositionSecondAirplane = glGetUniformLocation(airplaneShader, "uPos");
     
     // createMap();
     // createPlanes();
@@ -335,6 +357,16 @@ int main() {
         glBindVertexArray(VAO[2]);
         glUniform4f(uColorRestrictedArea, 1.0f, 0.0f, 0.0f, 0.2f);
         glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesRestrictedZone) / (2 * sizeof(float)));
+
+        // Airplanes
+        glUseProgram(airplaneShader);
+        glBindVertexArray(VAO[3]);
+        glUniform2f(uPositionFirstAirplane, firstCameraPosition.x - FIRST_AIRPLANE_INITIAL_X, - firstCameraPosition.z - FIRST_AIRPLANE_INITIAL_Y);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesFirstAirplane) / (2 * sizeof(float)));
+        
+        glBindVertexArray(VAO[4]);
+        glUniform2f(uPositionSecondAirplane, secondCameraPosition.x - SECOND_AIRPLANE_INITIAL_X, - secondCameraPosition.z - SECOND_AIRPLANE_INITIAL_Y);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesSecondAirplane) / (2 * sizeof(float)));
         
         // drawMap();
         // drawPlanes(window);

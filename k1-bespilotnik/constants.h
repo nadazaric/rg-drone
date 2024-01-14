@@ -8,8 +8,8 @@ constexpr int WINDOW_WIDTH = 1100;
 constexpr int WINDOW_HEIGHT = 1100;
 
 // Camera
-constexpr float CAMERA_SENSITIVITY = 0.02f;
-constexpr float CAMERA_SPEED = 0.0001f;
+constexpr float CAMERA_SENSITIVITY = 0.2f;
+constexpr float CAMERA_SPEED = 0.001f;
 constexpr float CAMERA_ANGLE = 30.0f;
 
 constexpr int CIRCLE_RESOLUTION = 50;
