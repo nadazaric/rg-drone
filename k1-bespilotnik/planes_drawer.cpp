@@ -139,10 +139,10 @@ void createProgressBar() {
     basicShader = createShader("basic.vert", "basic.frag");
 
     float firstProgressBarVertices[] = {
-       FIRST_PROGRESS_BAR_LEFT, PROGRESS_BAR_BOTTOM,                          FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
-       FIRST_PROGRESS_BAR_LEFT, PROGRESS_BAR_TOP,                             FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
-       FIRST_PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_BOTTOM,     FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
-       FIRST_PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_TOP,        FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3
+       PROGRESS_BAR_LEFT, PROGRESS_BAR_BOTTOM,                          FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
+       PROGRESS_BAR_LEFT, PROGRESS_BAR_TOP,                             FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
+       PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_BOTTOM,     FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
+       PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_TOP,        FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3
     };
 
     glGenVertexArrays(1, &VAO_PROGRESS_BAR[0]);
@@ -311,7 +311,7 @@ void drawProgressBars(GLFWwindow* window) {
     // first progress bar
     glBindVertexArray(VAO_PROGRESS_BAR[0]);
     glUniform1f(uFirstProgress, firstProgress);
-    glUniform1f(uFirstProggressStartPos, FIRST_PROGRESS_BAR_LEFT);
+    glUniform1f(uFirstProggressStartPos, PROGRESS_BAR_LEFT);
     glUniform1f(uFirstProgressMaxWidth, PROGRESS_BAR_WIDTH);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     // second progress bar

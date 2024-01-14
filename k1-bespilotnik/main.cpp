@@ -106,15 +106,16 @@ int main() {
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2D
 
-    unsigned int VAO[6];
-    glGenVertexArrays(6, VAO);
-    unsigned int VBO[6];
-    glGenBuffers(6, VBO);
+    unsigned int VAO[7];
+    glGenVertexArrays(7, VAO);
+    unsigned int VBO[7];
+    glGenBuffers(7, VBO);
 
     // Shaders
     unsigned int basicShader = createShader("basic.vert", "basic.frag");
     unsigned int textureShader = createShader("texture.vert", "texture.frag");
     unsigned int airplaneShader = createShader("plane.vert", "plane.frag");
+    unsigned int progressBarShader = createShader("progress_bar.vert", "progress_bar.frag");
 
     // Name
     float verticesName[] =
@@ -210,6 +211,8 @@ int main() {
     // Indicators
     bool isFirstAirplaneActive = false;
     bool isSecondAirplaneActive = false;
+    bool isFirstAirplaneDestroyed = false;
+    bool isSecondAirplaneDestroyed = false;
     float verticesIndicators[] =
     {
         INDICATOR_LEFT, FIRST_INDICATOR_BOTTOM,
@@ -226,6 +229,29 @@ int main() {
     glEnableVertexAttribArray(0);
 
     unsigned int uColorIndicator = glGetUniformLocation(basicShader, "uColor");
+
+    // Progress Bars
+    float firstAirplaneProgress = 1.0f;
+    float secondAirplaneProgress = 1.0f;
+    float verticesProgressBar[] = {
+        PROGRESS_BAR_LEFT, PROGRESS_BAR_BOTTOM,                          FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
+        PROGRESS_BAR_LEFT, PROGRESS_BAR_TOP,                             FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
+        PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_BOTTOM,     FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3,
+        PROGRESS_BAR_LEFT + PROGRESS_BAR_WIDTH, PROGRESS_BAR_TOP,        FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.3
+    };
+    unsigned int progressBarStride = (2 + 4) * sizeof(float);
+
+    glBindVertexArray(VAO[6]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[6]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesProgressBar), verticesProgressBar, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, progressBarStride, (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, progressBarStride, (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    unsigned int uSecondAirplaneProgress = glGetUniformLocation(progressBarShader, "uProgress");
+    unsigned int uSecondAirplaneProgressStartPos = glGetUniformLocation(progressBarShader, "uStartPos");
+    unsigned int uSecondAirplaneProgressMaxWidth = glGetUniformLocation(progressBarShader, "uMaxWidth");
     
     // createMap();
     // createPlanes();
@@ -274,6 +300,12 @@ int main() {
 
         if (isFirstAirplaneActive)
         {
+            if (firstAirplaneProgress >= 0) firstAirplaneProgress -= PROGRESS_BAR_OFFSET;
+            else {
+                isFirstAirplaneActive = false;
+                isFirstAirplaneDestroyed = true;
+            }
+            firstAirplaneProgress -= PROGRESS_BAR_OFFSET;
             // Prva kamera
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
                 firstCameraPosition += CAMERA_SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
@@ -308,6 +340,14 @@ int main() {
 
         if (isSecondAirplaneActive)
         {
+            if (secondAirplaneProgress >= 0) {
+                secondAirplaneProgress -= PROGRESS_BAR_OFFSET;
+            }
+            else {
+                isSecondAirplaneActive = false;
+                isSecondAirplaneDestroyed = true;
+            }
+            
             // Druga kamera
             if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
                 secondCameraPosition += CAMERA_SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
@@ -330,9 +370,9 @@ int main() {
         }
         
         // On/Off
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) isFirstAirplaneActive = true;
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isFirstAirplaneDestroyed) isFirstAirplaneActive = true;
         if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isFirstAirplaneActive = false;
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) isSecondAirplaneActive = true;
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isSecondAirplaneDestroyed) isSecondAirplaneActive = true;
         if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isSecondAirplaneActive = false;
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render
@@ -416,11 +456,32 @@ int main() {
         else glUniform4f(uColorIndicator, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
+        glBindVertexArray(VAO[6]);
+        glUniform4f(uColorRestrictedArea, FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.4f);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        glUseProgram(progressBarShader);
+        glUniform1f(uSecondAirplaneProgress, firstAirplaneProgress);
+        glUniform1f(uSecondAirplaneProgressStartPos, PROGRESS_BAR_LEFT);
+        glUniform1f(uSecondAirplaneProgressMaxWidth, PROGRESS_BAR_WIDTH);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        
         bottomViewport();
         glUseProgram(basicShader);
         glBindVertexArray(VAO[5]);
         if (isSecondAirplaneActive) glUniform4f(uColorIndicator, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
         else glUniform4f(uColorIndicator, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        glBindVertexArray(VAO[6]);
+        glUniform4f(uColorRestrictedArea, FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.4f);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        glUseProgram(progressBarShader);
+        glUniform1f(uSecondAirplaneProgress, secondAirplaneProgress);
+        glUniform1f(uSecondAirplaneProgressStartPos, PROGRESS_BAR_LEFT);
+        glUniform1f(uSecondAirplaneProgressMaxWidth, PROGRESS_BAR_WIDTH);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         
         // drawMap();
@@ -439,8 +500,8 @@ int main() {
     glDeleteTextures(1, &mapTexture);
 
     // Delete VBO and VAO
-    glDeleteBuffers(6, VBO);
-    glDeleteVertexArrays(6, VAO);
+    glDeleteBuffers(7, VBO);
+    glDeleteVertexArrays(7, VAO);
 
     // Delete shaders
     glDeleteProgram(basicShader);

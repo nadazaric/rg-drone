@@ -28,6 +28,13 @@ constexpr float INACTIVE_INDICATOR_B = 0.0f;
 constexpr float MIN_HEIGHT = 0.1f;
 constexpr float MAX_HEIGHT = 1.0f;
 
+// Progress Bar
+constexpr float PROGRESS_BAR_TOP = -0.75f;
+constexpr float PROGRESS_BAR_BOTTOM = -0.95f;
+constexpr float PROGRESS_BAR_LEFT = -0.8f;
+constexpr float PROGRESS_BAR_WIDTH = 0.5;
+constexpr float PROGRESS_BAR_OFFSET = 0.0001f;
+
 constexpr int CIRCLE_RESOLUTION = 50;
 constexpr float CIRCLE_PLANE_RADIUS = 0.03;
 constexpr float FIRST_AIRPLANE_INITIAL_X = -0.7f;
@@ -44,13 +51,8 @@ constexpr float SECOND_PLANE_G = 0.5;
 constexpr float SECOND_PLANE_B = 1.0;
 constexpr float PLANE_SPEED = 0.001;
 
-constexpr float FIRST_PROGRESS_BAR_LEFT = -0.95;
-constexpr float SECOND_PROGRESS_BAR_LEFT = 0.45;
 
-constexpr float PROGRESS_BAR_TOP = -0.85;
-constexpr float PROGRESS_BAR_BOTTOM = -0.95;
-constexpr float PROGRESS_BAR_WIDTH = 0.5;
-constexpr float PROGRESS_BAR_OFFSET = 0.0001;
+constexpr float SECOND_PROGRESS_BAR_LEFT = 0.45;
 
 constexpr float CIRCLE_RESTRICTED_ZONE_RADIUS = 0.42;
 constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_X = 0.0;
