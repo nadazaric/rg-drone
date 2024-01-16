@@ -113,12 +113,12 @@ void destroySecondDrone() {
 
 void turnOnCamera(int droneNum)
 {
-    if (droneNum == 1) {
+    if (droneNum == 1 && !isFirstDroneCameraActive) {
         isFirstDroneCameraActive = true;
         firstDroneConsumption += CONSUMPTION_CAMERA_ON;
-    } else {
+    } else if (droneNum == 2 && !isSecondDroneCameraActive)  {
         isSecondDroneCameraActive = true;
-        firstDroneConsumption += CONSUMPTION_CAMERA_ON;
+        secondDroneConsumption += CONSUMPTION_CAMERA_ON;
     }
 }
 
@@ -129,7 +129,7 @@ void turnOffCamera(int droneNum)
         firstDroneConsumption -= CONSUMPTION_CAMERA_ON;
     } else if (droneNum == 2 && isSecondDroneCameraActive) {
         isSecondDroneCameraActive = false;
-        firstDroneConsumption -= CONSUMPTION_CAMERA_ON;
+        secondDroneConsumption -= CONSUMPTION_CAMERA_ON;
     }
 }
 
