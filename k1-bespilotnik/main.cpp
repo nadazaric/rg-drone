@@ -111,6 +111,28 @@ void destroySecondDrone() {
     isSecondDroneDestroyed = true;
 }
 
+void turnOnDrone(int droneNum)
+{
+    if (droneNum == 1 && !isFirstDroneActive) {
+        isFirstDroneActive = true;
+        firstDroneConsumption += CONSUMPTION_DRONE_ACTIVE;
+    } else if (droneNum == 2 && !isSecondDroneActive)  {
+        isSecondDroneActive = true;
+        secondDroneConsumption += CONSUMPTION_DRONE_ACTIVE;
+    }
+}
+
+void turnOffDrone(int droneNum)
+{
+    if (droneNum == 1 && isFirstDroneActive) {
+        isFirstDroneActive = false;
+        firstDroneConsumption -= CONSUMPTION_DRONE_ACTIVE;
+    } else if (droneNum == 2 && isSecondDroneActive) {
+        isSecondDroneActive = false;
+        secondDroneConsumption -= CONSUMPTION_DRONE_ACTIVE;
+    }
+}
+
 void turnOnCamera(int droneNum)
 {
     if (droneNum == 1 && !isFirstDroneCameraActive) {
@@ -504,10 +526,10 @@ int main() {
         }
         
         // On/Off Drone
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isFirstDroneDestroyed) isFirstDroneActive = true;
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isFirstDroneActive = false;
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isSecondDroneDestroyed) isSecondDroneActive = true;
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isSecondDroneActive = false;
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isFirstDroneDestroyed) turnOnDrone(1);
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) turnOffDrone(1);
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isSecondDroneDestroyed) turnOnDrone(2);
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) turnOffDrone(2);
 
         // On/Off Camera
         if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && !isFirstDroneDestroyed) turnOnCamera(1);
