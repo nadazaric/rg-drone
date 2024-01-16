@@ -23,6 +23,10 @@ bool isSecondDroneOnLand = true;
 bool isFirstDroneCameraActive = false;
 bool isSecondDroneCameraActive = false;
 
+// Drone consts
+float firstDroneConsumption = 0.0f;
+float secondDroneConsumption = 0.0f;
+
 static unsigned loadImageToTexture(const char* filePath) {
     int TextureWidth;
     int TextureHeight;
@@ -105,6 +109,28 @@ void destroySecondDrone() {
     isSecondDroneActive = false;
     isSecondDroneOnLand = true;
     isSecondDroneDestroyed = true;
+}
+
+void turnOnCamera(int droneNum)
+{
+    if (droneNum == 1) {
+        isFirstDroneCameraActive = true;
+        firstDroneConsumption += CONSUMPTION_CAMERA_ON;
+    } else {
+        isSecondDroneCameraActive = true;
+        firstDroneConsumption += CONSUMPTION_CAMERA_ON;
+    }
+}
+
+void turnOffCamera(int droneNum)
+{
+    if (droneNum == 1 && isFirstDroneCameraActive) {
+        isFirstDroneCameraActive = false;
+        firstDroneConsumption -= CONSUMPTION_CAMERA_ON;
+    } else if (droneNum == 2 && isSecondDroneCameraActive) {
+        isSecondDroneCameraActive = false;
+        firstDroneConsumption -= CONSUMPTION_CAMERA_ON;
+    }
 }
 
 bool isOutOfMap(glm::vec3 drone) {
@@ -406,12 +432,6 @@ int main() {
 
         if (isFirstDroneActive)
         {
-            if (firstAirplaneProgress >= 0) firstAirplaneProgress -= PROGRESS_BAR_OFFSET;
-            else {
-                isFirstDroneActive = false;
-                isFirstDroneDestroyed = true;
-            }
-            firstAirplaneProgress -= PROGRESS_BAR_OFFSET;
             // Prva kamera
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
                 firstCameraPosition += SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
@@ -450,11 +470,6 @@ int main() {
 
         if (isSecondDroneActive)
         {
-            if (secondAirplaneProgress >= 0) secondAirplaneProgress -= PROGRESS_BAR_OFFSET;
-            else {
-                isSecondDroneActive = false;
-                isSecondDroneDestroyed = true;
-            }
             // Druga kamera
             if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
                 secondCameraPosition += SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
@@ -495,12 +510,25 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isSecondDroneActive = false;
 
         // On/Off Camera
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && !isFirstDroneDestroyed) isFirstDroneCameraActive = true;
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) isFirstDroneCameraActive = false;
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && !isSecondDroneDestroyed) isSecondDroneCameraActive = true;
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) isSecondDroneCameraActive = false;
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && !isFirstDroneDestroyed) turnOnCamera(1);
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) turnOffCamera(1);
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && !isSecondDroneDestroyed) turnOnCamera(2);
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) turnOffCamera(2);
 
+
+        // Consumption progress
+        if (firstAirplaneProgress >= 0) firstAirplaneProgress -= firstDroneConsumption;
+        else {
+            isFirstDroneActive = false;
+            isFirstDroneDestroyed = true;
+        }
+        if (secondAirplaneProgress >= 0) secondAirplaneProgress -= secondDroneConsumption;
+        else {
+            isSecondDroneActive = false;
+            isSecondDroneDestroyed = true;
+        }
         
+        // Is Destroyed
         if (!isFirstDroneActive && !isFirstDroneOnLand) {
             firstCameraPosition -= LAND_SPEED * firstCameraUp;
             if (firstCameraPosition.y <= DRONE_MIN_HEIGHT) isFirstDroneOnLand = true;
