@@ -84,6 +84,10 @@ void moveTo(glm::mat4& mat, float x, float y, float z) {
     mat[3][2] = z;
 }
 
+void rotateTo(glm::mat4& mat, float angle) {
+    mat = glm::rotate(mat, -glm::radians(angle - INITIAL_CAMERA_ANGLE), glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
 int main() {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Init libs
     if (!glfwInit()) {
@@ -408,7 +412,7 @@ int main() {
         // Prikaz drugog aviona za prvu mapu
         glm::mat4 model = glm::mat4(1.0f);
         moveTo(model, secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z);
-        model = glm::rotate(model, -glm::radians(secondCameraYaw - INITIAL_CAMERA_ANGLE), glm::vec3(0.0f, 1.0f, 0.0f));
+        rotateTo(model, secondCameraYaw);
         basic3dShader.setMat4("uM", model);
         secondDroneModel.Draw(basic3dShader);
 
@@ -432,7 +436,7 @@ int main() {
         // Prikaz drugog aviona za prvu mapu
         model = glm::mat4(1.0f);
         moveTo(model, firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z);
-        model = glm::rotate(model, -glm::radians(firstCameraYaw - INITIAL_CAMERA_ANGLE), glm::vec3(0.0f, 1.0f, 0.0f));
+        rotateTo(model, firstCameraYaw);
         basic3dShader.setMat4("uM", model);
         firstDroneModel.Draw(basic3dShader);
 
