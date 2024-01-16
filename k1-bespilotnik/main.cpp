@@ -21,7 +21,7 @@ bool isSecondDroneDestroyed = false;
 bool isFirstDroneOnLand = true;
 bool isSecondDroneOnLand = true;
 bool isFirstDroneCameraActive = false;
-bool isSecondDroneCameraActive = true;
+bool isSecondDroneCameraActive = false;
 
 static unsigned loadImageToTexture(const char* filePath) {
     int TextureWidth;
@@ -488,12 +488,19 @@ int main() {
             destroySecondDrone();
         }
         
-        // On/Off
+        // On/Off Drone
         if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isFirstDroneDestroyed) isFirstDroneActive = true;
         if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isFirstDroneActive = false;
         if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isSecondDroneDestroyed) isSecondDroneActive = true;
         if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isSecondDroneActive = false;
 
+        // On/Off Camera
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && !isFirstDroneDestroyed) isFirstDroneCameraActive = true;
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) isFirstDroneCameraActive = false;
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && !isSecondDroneDestroyed) isSecondDroneCameraActive = true;
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) isSecondDroneCameraActive = false;
+
+        
         if (!isFirstDroneActive && !isFirstDroneOnLand) {
             firstCameraPosition -= LAND_SPEED * firstCameraUp;
             if (firstCameraPosition.y <= DRONE_MIN_HEIGHT) isFirstDroneOnLand = true;
