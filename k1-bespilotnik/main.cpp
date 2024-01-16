@@ -7,14 +7,19 @@
 #include <fstream>
 #include <sstream>
 #include "shader_helper.h"
-#include "texture_helper.h"
 #include "constants.h"
-#include "map_drawer.h"
 #include "model.hpp"
-#include "planes_drawer.h"
 #include "shader.hpp"
 #include "circle_helper.h"
 using namespace std;
+
+// Drone bools
+bool isFirstDroneActive = false;
+bool isSecondDroneActive = false;
+bool isFirstDroneDestroyed = false;
+bool isSecondDroneDestroyed = false;
+bool isFirstDroneOnLand = true;
+bool isSecondDroneOnLand = true;
 
 static unsigned loadImageToTexture(const char* filePath) {
     int TextureWidth;
@@ -88,6 +93,49 @@ void rotateTo(glm::mat4& mat, float angle) {
     mat = glm::rotate(mat, -glm::radians(angle - INITIAL_CAMERA_ANGLE), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
+void destroyFirstDrone() {
+    isFirstDroneActive = false;
+    isFirstDroneOnLand = true;
+    isFirstDroneDestroyed = true;
+}
+
+void destroySecondDrone() {
+    isSecondDroneActive = false;
+    isSecondDroneOnLand = true;
+    isSecondDroneDestroyed = true;
+}
+
+bool isOutOfMap(glm::vec3 drone) {
+    return drone.x > MAP_RIGHT || drone.x < MAP_LEFT || drone.z > MAP_TOP || drone.z < MAP_BOTTOM;
+}
+
+bool isInRestricted(glm::vec3 drone) {
+    double distance =
+        std::sqrt(std::pow(drone.x - CIRCLE_RESTRICTED_ZONE_CENTER_X, 2) + std::pow(-drone.z - CIRCLE_RESTRICTED_ZONE_CENTER_Y, 2));
+    return distance - CIRCLE_RESTRICTED_ZONE_RADIUS < 1e-6; // < CIRCLE_PLANE_RADIUS //ako hocu da pri dodiru vec nestane avion
+}
+
+bool isColision(glm::vec3 firstDrone, glm::vec3 secondDrone) {
+    float firstMinX = firstDrone.x - DRONE_OUTBOX_WIDTH / 2.0f;
+    float firstMaxX = firstDrone.x + DRONE_OUTBOX_WIDTH / 2.0f;
+    float firstMinY = firstDrone.y - DRONE_OUTBOX_HEIGHT / 2.0f;
+    float firstMaxY = firstDrone.y + DRONE_OUTBOX_HEIGHT / 2.0f;
+    float firstMinZ = firstDrone.z - DRONE_OUTBOX_LENGTH / 2.0f;
+    float firstMaxZ = firstDrone.z + DRONE_OUTBOX_LENGTH / 2.0f;
+
+    float secondMinX = secondDrone.x - DRONE_OUTBOX_WIDTH / 2.0f;
+    float secondMaxX = secondDrone.x + DRONE_OUTBOX_WIDTH / 2.0f;
+    float secondMinY = secondDrone.y - DRONE_OUTBOX_HEIGHT / 2.0f;
+    float secondMaxY = secondDrone.y + DRONE_OUTBOX_HEIGHT / 2.0f;
+    float secondMinZ = secondDrone.z - DRONE_OUTBOX_LENGTH / 2.0f;
+    float secondMaxZ = secondDrone.z + DRONE_OUTBOX_LENGTH / 2.0f;
+    
+    bool collisionX = firstMaxX >= secondMinX && firstMinX <= secondMaxX;
+    bool collisionY = firstMaxY >= secondMinY && firstMinY <= secondMaxY;
+    bool collisionZ = firstMaxZ >= secondMinZ && firstMinZ <= secondMaxZ;
+    return collisionX && collisionY && collisionZ;
+}
+
 int main() {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Init libs
     if (!glfwInit()) {
@@ -124,23 +172,23 @@ int main() {
     // Shaders
     unsigned int basicShader = createShader("basic.vert", "basic.frag");
     unsigned int textureShader = createShader("texture.vert", "texture.frag");
-    unsigned int airplaneShader = createShader("airplane.vert", "airplane.frag");
+    unsigned int droneShader = createShader("drone.vert", "drone.frag");
     unsigned int progressBarShader = createShader("progress_bar.vert", "progress_bar.frag");
 
     // Uniforms
     unsigned int uBasicShaderColor = glGetUniformLocation(basicShader, "uColor");
-    unsigned int uAirplaneShaderPosition = glGetUniformLocation(airplaneShader, "uPos");
-    unsigned int uAirplaneShaderColor = glGetUniformLocation(airplaneShader, "uColor");
+    unsigned int uDroneShaderPosition = glGetUniformLocation(droneShader, "uPos");
+    unsigned int uDroneShaderColor = glGetUniformLocation(droneShader, "uColor");
     unsigned int uProgressBarShaderColor = glGetUniformLocation(progressBarShader, "uColor");
     unsigned int uProgressBarShaderProgress = glGetUniformLocation(progressBarShader, "uProgress");
     unsigned int uProgressBarShaderStartPosition = glGetUniformLocation(progressBarShader, "uStartPos");
     unsigned int uProgressBarShaderMaxWidth = glGetUniformLocation(progressBarShader, "uMaxWidth");
 
     // Set Uniforms
-    glUseProgram(airplaneShader);
-    glUniform4f(uAirplaneShaderColor, AIRPLANE_R, AIRPLANE_G, AIRPLANE_B, 1.0);
+    glUseProgram(droneShader);
+    glUniform4f(uDroneShaderColor, DRONE_R, DRONE_G, DRONE_B, 1.0);
     glUseProgram(progressBarShader);
-    glUniform3f(uProgressBarShaderColor, AIRPLANE_R, AIRPLANE_G, AIRPLANE_B);
+    glUniform3f(uProgressBarShaderColor, DRONE_R, DRONE_G, DRONE_B);
     glUniform1f(uProgressBarShaderStartPosition, PROGRESS_BAR_LEFT);
     glUniform1f(uProgressBarShaderStartPosition, PROGRESS_BAR_LEFT);
     glUniform1f(uProgressBarShaderMaxWidth, PROGRESS_BAR_WIDTH);
@@ -148,10 +196,10 @@ int main() {
     // Name
     float verticesName[] =
     {
-        TITLE_LEFT, TITLE_BOTTOM,   0.0, 0.0,
-        TITLE_LEFT, TITLE_TOP,      0.0, 1.0,
-        TITLE_RIGHT, TITLE_BOTTOM,  1.0, 0.0,
-        TITLE_RIGHT, TITLE_TOP,     1.0, 1.0
+        NAME_LEFT, NAME_BOTTOM,   0.0, 0.0,
+        NAME_LEFT, NAME_TOP,      0.0, 1.0,
+        NAME_RIGHT, NAME_BOTTOM,  1.0, 0.0,
+        NAME_RIGHT, NAME_TOP,     1.0, 1.0
     };
     unsigned int nameStride = (2 + 2) * sizeof(float);
 
@@ -163,7 +211,7 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, nameStride, (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    unsigned nameTexture = loadImageToTexture(TITLE_IMAGE_PATH);
+    unsigned nameTexture = loadImageToTexture(TITLE_TEXTURE_PATH);
     glBindTexture(GL_TEXTURE_2D, nameTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -190,7 +238,7 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, mapStride, (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    unsigned mapTexture = loadImageToTexture(MAP_IMAGE_PATH);
+    unsigned mapTexture = loadImageToTexture(MAP_TEXTURE_PATH);
     glBindTexture(GL_TEXTURE_2D, mapTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -211,7 +259,7 @@ int main() {
 
     // Airplanes
     float verticesFirstAirplane[CIRCLE_RESOLUTION * 2 + 4];
-    generateCircle(FIRST_AIRPLANE_INITIAL_X, FIRST_AIRPLANE_INITIAL_Y, CIRCLE_PLANE_RADIUS, verticesFirstAirplane, CIRCLE_RESOLUTION);
+    generateCircle(FIRST_DRONE_INITIAL_X, FIRST_DRONE_INITIAL_Y, CIRCLE_DRONE_RADIUS, verticesFirstAirplane, CIRCLE_RESOLUTION);
 
     glBindVertexArray(VAO[3]);
     glBindBuffer(GL_ARRAY_BUFFER, VBO[3]);
@@ -220,7 +268,7 @@ int main() {
     glEnableVertexAttribArray(0);
     
     float verticesSecondAirplane[CIRCLE_RESOLUTION * 2 + 4];
-    generateCircle(SECOND_AIRPLANE_INITIAL_X, SECOND_AIRPLANE_INITIAL_Y, CIRCLE_PLANE_RADIUS, verticesSecondAirplane, CIRCLE_RESOLUTION);
+    generateCircle(SECOND_DRONE_INITIAL_X, SECOND_DRONE_INITIAL_Y, CIRCLE_DRONE_RADIUS, verticesSecondAirplane, CIRCLE_RESOLUTION);
 
     glBindVertexArray(VAO[4]);
     glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
@@ -231,9 +279,9 @@ int main() {
     // Indicators
     float verticesIndicators[] =
     {
-        INDICATOR_LEFT, FIRST_INDICATOR_BOTTOM,
+        INDICATOR_LEFT, INDICATOR_BOTTOM,
         INDICATOR_LEFT, INDICATOR_TOP,
-        INDICATOR_RIGHT, FIRST_INDICATOR_BOTTOM,
+        INDICATOR_RIGHT, INDICATOR_BOTTOM,
         INDICATOR_RIGHT, INDICATOR_TOP,
     };
     unsigned int indicatorStride = 2 * sizeof(float);
@@ -260,19 +308,7 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesProgressBar), verticesProgressBar, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, progressBarStride, (void*)0);
     glEnableVertexAttribArray(0);
-
-    // Drone bools
-    bool isFirstAirplaneActive = false;
-    bool isSecondAirplaneActive = false;
-    bool isFirstAirplaneDestroyed = false;
-    bool isSecondAirplaneDestroyed = false;
-    bool isFirstDroneOnLand = true;
-    bool isSecondDroneOnLand = true;
     
-    // createMap();
-    // createPlanes();
-    // createIndicators();
-    // createProgressBar();
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -282,14 +318,14 @@ int main() {
     glm::mat4 projection = glm::perspective(glm::radians(50.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
     glm::mat4 firstCameraView;
-    glm::vec3 firstCameraPosition = glm::vec3(FIRST_AIRPLANE_INITIAL_X, FIRST_AIRPLANE_INITIAL_HEIGHT, FIRST_AIRPLANE_INITIAL_Y + 1.0f);
+    glm::vec3 firstCameraPosition = glm::vec3(FIRST_DRONE_INITIAL_X, FIRST_DRONE_INITIAL_HEIGHT, FIRST_DRONE_INITIAL_Y + 1.0f);
     glm::vec3 firstCameraFront = glm::vec3(0.0f, 0.0f, 0.1f); // vektor koji odredjuje smijer gledanja kamere
     glm::vec3 firstCameraUp = glm::vec3(0.0f, 1.0f, 0.0f); // znaci da je "gore" usmjereno prema pozitivnom y-smjeru (oznacava sta je gore u odnosu na kameru)
     float firstCameraYaw = INITIAL_CAMERA_ANGLE; // vrijednost "skretanja" koliko idemo gledamo ulijevo ili udesno po horizontali (yaw value which represents the magnitude we're looking to the left or to the right)
     float firstCameraPitch = 0.0f; // koliko gledamo gore/dole (angle that depicts how much we're looking up or down)
 
     glm::mat4 secondCameraView;
-    glm::vec3 secondCameraPosition = glm::vec3(SECOND_AIRPLANE_INITIAL_X, SECOND_AIRPLANE_INITIAL_HEIGHT, SECOND_AIRPLANE_INITIAL_Y + 1.0f);
+    glm::vec3 secondCameraPosition = glm::vec3(SECOND_DRONE_INITIAL_X, SECOND_DRONE_INITIAL_HEIGHT, SECOND_DRONE_INITIAL_Y + 1.0f);
     glm::vec3 secondCameraFront = glm::vec3(0.0f, 0.0f, 0.1f);
     glm::vec3 secondCameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     float secondCameraYaw = INITIAL_CAMERA_ANGLE;
@@ -316,12 +352,12 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GL_TRUE);
 
-        if (isFirstAirplaneActive)
+        if (isFirstDroneActive)
         {
             if (firstAirplaneProgress >= 0) firstAirplaneProgress -= PROGRESS_BAR_OFFSET;
             else {
-                isFirstAirplaneActive = false;
-                isFirstAirplaneDestroyed = true;
+                isFirstDroneActive = false;
+                isFirstDroneDestroyed = true;
             }
             firstAirplaneProgress -= PROGRESS_BAR_OFFSET;
             // Prva kamera
@@ -343,18 +379,14 @@ int main() {
                 firstCameraPosition += glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * SPEED; 
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
                 isFirstDroneOnLand = false;
-                if (firstCameraPosition.y <= MAX_HEIGHT) firstCameraPosition  += SPEED * firstCameraUp;
+                if (firstCameraPosition.y <= DRONE_MAX_HEIGHT) firstCameraPosition  += SPEED * firstCameraUp;
             }
             // posto cameraUp oznacava sta je inad kamera (u ovom slucaju penjemo se po y osi, onda cameraUp ima (0,1,0) vrijednosti
             // onda to mnozimo s brzinom i dodajemo na poziciju kamere
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
             {
                 firstCameraPosition -= SPEED * firstCameraUp;
-                if (firstCameraPosition.y < MIN_HEIGHT) {
-                    isFirstAirplaneDestroyed = true;
-                    isFirstAirplaneActive = false;
-                    isFirstDroneOnLand = true;
-                }
+                if (firstCameraPosition.y < DRONE_MIN_HEIGHT) destroyFirstDrone();
             }
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
                 firstCameraYaw -= CAMERA_SENSITIVITY;
@@ -362,17 +394,15 @@ int main() {
             // yaw potreban kasnije u kodu za izracunavanje novog cameraFront
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
                 firstCameraYaw += CAMERA_SENSITIVITY;
-                
         }
 
-        if (isSecondAirplaneActive)
+        if (isSecondDroneActive)
         {
             if (secondAirplaneProgress >= 0) secondAirplaneProgress -= PROGRESS_BAR_OFFSET;
             else {
-                isSecondAirplaneActive = false;
-                isSecondAirplaneDestroyed = true;
+                isSecondDroneActive = false;
+                isSecondDroneDestroyed = true;
             }
-            
             // Druga kamera
             if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
                 secondCameraPosition += SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
@@ -384,16 +414,12 @@ int main() {
                 secondCameraPosition += glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * SPEED;
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
                 isSecondDroneOnLand = false;
-                if (secondCameraPosition.y <= MAX_HEIGHT) secondCameraPosition += SPEED * secondCameraUp;
+                if (secondCameraPosition.y <= DRONE_MAX_HEIGHT) secondCameraPosition += SPEED * secondCameraUp;
             }
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
                 secondCameraPosition -= SPEED * secondCameraUp;
-                if (secondCameraPosition.y < MIN_HEIGHT) {
-                    isSecondAirplaneDestroyed = true;
-                    isSecondAirplaneActive = false;
-                    isSecondDroneOnLand = true;
-                }
+                if (secondCameraPosition.y < DRONE_MIN_HEIGHT) destroySecondDrone();
             }
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
                 secondCameraYaw -= CAMERA_SENSITIVITY;
@@ -401,20 +427,28 @@ int main() {
                 secondCameraYaw += CAMERA_SENSITIVITY;
             }
         }
+
+        // Check Errors
+        if (isOutOfMap(firstCameraPosition) || isInRestricted(firstCameraPosition)) destroyFirstDrone();
+        if (isOutOfMap(secondCameraPosition) || isInRestricted(secondCameraPosition)) destroySecondDrone();
+        if (isColision(firstCameraPosition, secondCameraPosition)) {
+            destroyFirstDrone();
+            destroySecondDrone();
+        }
         
         // On/Off
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isFirstAirplaneDestroyed) isFirstAirplaneActive = true;
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isFirstAirplaneActive = false;
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isSecondAirplaneDestroyed) isSecondAirplaneActive = true;
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isSecondAirplaneActive = false;
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isFirstDroneDestroyed) isFirstDroneActive = true;
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isFirstDroneActive = false;
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isSecondDroneDestroyed) isSecondDroneActive = true;
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isSecondDroneActive = false;
 
-        if (!isFirstAirplaneActive && !isFirstDroneOnLand) {
+        if (!isFirstDroneActive && !isFirstDroneOnLand) {
             firstCameraPosition -= LAND_SPEED * firstCameraUp;
-            if (firstCameraPosition.y <= MIN_HEIGHT) isFirstDroneOnLand = true;
+            if (firstCameraPosition.y <= DRONE_MIN_HEIGHT) isFirstDroneOnLand = true;
         }
-        if (!isSecondAirplaneActive && !isSecondDroneOnLand) {
+        if (!isSecondDroneActive && !isSecondDroneOnLand) {
             secondCameraPosition -= LAND_SPEED * secondCameraUp;
-            if (secondCameraPosition.y <= MIN_HEIGHT) isSecondDroneOnLand = true;
+            if (secondCameraPosition.y <= DRONE_MIN_HEIGHT) isSecondDroneOnLand = true;
         }
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render
@@ -438,7 +472,7 @@ int main() {
         map.Draw(basic3dShader);
 
         // Prikaz drugog aviona za prvu mapu
-        if (!isSecondAirplaneDestroyed) {
+        if (!isSecondDroneDestroyed) {
             glm::mat4 model = glm::mat4(1.0f);
             moveTo(model, secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z);
             rotateTo(model, secondCameraYaw);
@@ -465,7 +499,7 @@ int main() {
         map.Draw(basic3dShader);
         
         // Prikaz prvog aviona za drugu mapu
-        if (!isFirstAirplaneDestroyed) {
+        if (!isFirstDroneDestroyed) {
             glm::mat4 model = glm::mat4(1.0f);
             moveTo(model, firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z);
             rotateTo(model, firstCameraYaw);
@@ -501,17 +535,17 @@ int main() {
         glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesRestrictedZone) / (2 * sizeof(float)));
 
         // Airplanes
-        glUseProgram(airplaneShader);
+        glUseProgram(droneShader);
 
-        if (!isFirstAirplaneDestroyed) {
+        if (!isFirstDroneDestroyed) {
             glBindVertexArray(VAO[3]);
-            glUniform2f(uAirplaneShaderPosition, firstCameraPosition.x - FIRST_AIRPLANE_INITIAL_X, - firstCameraPosition.z - FIRST_AIRPLANE_INITIAL_Y);
+            glUniform2f(uDroneShaderPosition, firstCameraPosition.x - FIRST_DRONE_INITIAL_X, - firstCameraPosition.z - FIRST_DRONE_INITIAL_Y);
             glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesFirstAirplane) / (2 * sizeof(float)));
         }
 
-        if (!isSecondAirplaneDestroyed) {
+        if (!isSecondDroneDestroyed) {
             glBindVertexArray(VAO[4]);
-            glUniform2f(uAirplaneShaderPosition, secondCameraPosition.x - SECOND_AIRPLANE_INITIAL_X, - secondCameraPosition.z - SECOND_AIRPLANE_INITIAL_Y);
+            glUniform2f(uDroneShaderPosition, secondCameraPosition.x - SECOND_DRONE_INITIAL_X, - secondCameraPosition.z - SECOND_DRONE_INITIAL_Y);
             glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesSecondAirplane) / (2 * sizeof(float)));
         }
 
@@ -520,12 +554,12 @@ int main() {
         topViewport();
         glUseProgram(basicShader);
         glBindVertexArray(VAO[5]);
-        if (isFirstAirplaneActive) glUniform4f(uBasicShaderColor, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
+        if (isFirstDroneActive) glUniform4f(uBasicShaderColor, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
         else glUniform4f(uBasicShaderColor, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glBindVertexArray(VAO[6]);
-        glUniform4f(uBasicShaderColor, FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.4f);
+        glUniform4f(uBasicShaderColor, DRONE_R, DRONE_G, DRONE_B, 0.4f);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glUseProgram(progressBarShader);
@@ -536,21 +570,17 @@ int main() {
         bottomViewport();
         glUseProgram(basicShader);
         glBindVertexArray(VAO[5]);
-        if (isSecondAirplaneActive) glUniform4f(uBasicShaderColor, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
+        if (isSecondDroneActive) glUniform4f(uBasicShaderColor, INDICATOR_R, INDICATOR_G, INDICATOR_B, 1.0);
         else glUniform4f(uBasicShaderColor, INACTIVE_INDICATOR_R, INACTIVE_INDICATOR_G, INACTIVE_INDICATOR_B, 1.0);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glBindVertexArray(VAO[6]);
-        glUniform4f(uBasicShaderColor, FIRST_PLANE_R, FIRST_PLANE_G, FIRST_PLANE_B, 0.4f);
+        glUniform4f(uBasicShaderColor, DRONE_R, DRONE_G, DRONE_B, 0.4f);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glUseProgram(progressBarShader);
         glUniform1f(uProgressBarShaderProgress, secondAirplaneProgress);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        
-        // drawMap();
-        // drawPlanes(window); 
-        // drawProgressBars(window);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

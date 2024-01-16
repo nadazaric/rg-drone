@@ -130,33 +130,23 @@
   <ItemGroup>
     <ClCompile Include="circle_helper.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="map_drawer.cpp" />
-    <ClCompile Include="planes_drawer.cpp" />
     <ClCompile Include="shader_helper.cpp" />
-    <ClCompile Include="texture_helper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="circle_helper.h" />
     <ClInclude Include="constants.h" />
-    <ClInclude Include="map_drawer.h" />
     <ClInclude Include="mesh.hpp" />
     <ClInclude Include="model.hpp" />
-    <ClInclude Include="planes_drawer.h" />
     <ClInclude Include="shader.hpp" />
     <ClInclude Include="shader_helper.h" />
     <ClInclude Include="stb_image.h" />
-    <ClInclude Include="texture_helper.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="basic.frag" />
     <None Include="basic.vert" />
-    <None Include="glass.frag" />
-    <None Include="glass.vert" />
-    <None Include="map.frag" />
-    <None Include="map.vert" />
     <None Include="packages.config" />
-    <None Include="airplane.frag" />
-    <None Include="airplane.vert" />
+    <None Include="drone.frag" />
+    <None Include="drone.vert" />
     <None Include="progress_bar.frag" />
     <None Include="progress_bar.vert" />
   </ItemGroup>
