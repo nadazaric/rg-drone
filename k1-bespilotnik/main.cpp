@@ -438,11 +438,14 @@ int main() {
         map.Draw(basic3dShader);
 
         // Prikaz drugog aviona za prvu mapu
-        glm::mat4 model = glm::mat4(1.0f);
-        moveTo(model, secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z);
-        rotateTo(model, secondCameraYaw);
-        basic3dShader.setMat4("uM", model);
-        secondDroneModel.Draw(basic3dShader);
+        if (!isSecondAirplaneDestroyed) {
+            glm::mat4 model = glm::mat4(1.0f);
+            moveTo(model, secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z);
+            rotateTo(model, secondCameraYaw);
+            basic3dShader.setMat4("uM", model);
+            secondDroneModel.Draw(basic3dShader);
+        }
+       
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bottom Window
         bottomViewport();
@@ -461,12 +464,15 @@ int main() {
         basic3dShader.setMat4("uM", glm::mat4(1.0f));
         map.Draw(basic3dShader);
         
-        // Prikaz drugog aviona za prvu mapu
-        model = glm::mat4(1.0f);
-        moveTo(model, firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z);
-        rotateTo(model, firstCameraYaw);
-        basic3dShader.setMat4("uM", model);
-        firstDroneModel.Draw(basic3dShader);
+        // Prikaz prvog aviona za drugu mapu
+        if (!isFirstAirplaneDestroyed) {
+            glm::mat4 model = glm::mat4(1.0f);
+            moveTo(model, firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z);
+            rotateTo(model, firstCameraYaw);
+            basic3dShader.setMat4("uM", model);
+            firstDroneModel.Draw(basic3dShader);
+        }
+       
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2D Render
         draw2D();
