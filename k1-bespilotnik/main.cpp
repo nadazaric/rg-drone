@@ -21,7 +21,7 @@ bool isSecondDroneDestroyed = false;
 bool isFirstDroneOnLand = true;
 bool isSecondDroneOnLand = true;
 bool isFirstDroneCameraActive = false;
-bool isSecondDroneCameraActive = false;
+bool isSecondDroneCameraActive = true;
 
 static unsigned loadImageToTexture(const char* filePath) {
     int TextureWidth;
@@ -389,6 +389,7 @@ int main() {
     setFront(firstCameraFront, firstCameraPitch, firstCameraYaw);
     firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
     basic3dShader.setMat4("uV", firstCameraView);
+ 
     setFront(secondCameraFront, secondCameraPitch, secondCameraYaw);
     secondCameraView = lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
     basic3dShader.setMat4("uV", secondCameraView);
@@ -509,14 +510,14 @@ int main() {
         {
             draw3D();
             basic3dShader.use();
-        
+            
             setFront(firstCameraFront, firstCameraPitch, firstCameraYaw);
             firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
             basic3dShader.setMat4("uV", firstCameraView);
-        
+            
             basic3dShader.setMat4("uM", glm::mat4(1.0f)); // Prikaz mape za prvu kameru
             map.Draw(basic3dShader);
-
+            
             // Prikaz drugog aviona za prvu mapu
             if (!isSecondDroneDestroyed) {
                 glm::mat4 model = glm::mat4(1.0f);
@@ -539,6 +540,7 @@ int main() {
         if (isSecondDroneCameraActive)
         {
             draw3D();
+            basic3dShader.use();
             setFront(secondCameraFront, secondCameraPitch, secondCameraYaw);
             secondCameraView = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
             basic3dShader.setMat4("uV", secondCameraView);
