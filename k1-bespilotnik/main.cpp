@@ -342,7 +342,13 @@ int main() {
             // posto cameraUp oznacava sta je inad kamera (u ovom slucaju penjemo se po y osi, onda cameraUp ima (0,1,0) vrijednosti
             // onda to mnozimo s brzinom i dodajemo na poziciju kamere
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            {
                 firstCameraPosition -= CAMERA_SPEED * firstCameraUp;
+                if (firstCameraPosition.y < MIN_HEIGHT) {
+                    isFirstAirplaneDestroyed = true;
+                    isFirstAirplaneActive = false;
+                }
+            }
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
                 firstCameraYaw -= CAMERA_SENSITIVITY;
             // posto yaw oznacava koliko idemo lijevo i desno na trenutnoj ravni, horizontalno, onda samo dodam/oduzmem ako hocu da vrsim rotaciju kamere
@@ -354,9 +360,7 @@ int main() {
 
         if (isSecondAirplaneActive)
         {
-            if (secondAirplaneProgress >= 0) {
-                secondAirplaneProgress -= PROGRESS_BAR_OFFSET;
-            }
+            if (secondAirplaneProgress >= 0) secondAirplaneProgress -= PROGRESS_BAR_OFFSET;
             else {
                 isSecondAirplaneActive = false;
                 isSecondAirplaneDestroyed = true;
@@ -374,13 +378,19 @@ int main() {
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
                 if (secondCameraPosition.y <= MAX_HEIGHT) secondCameraPosition += CAMERA_SPEED * secondCameraUp;
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            {
                 secondCameraPosition -= CAMERA_SPEED * secondCameraUp;
+                if (secondCameraPosition.y < MIN_HEIGHT) {
+                    isSecondAirplaneDestroyed = true;
+                    isSecondAirplaneActive = false;
+                }
+            }
+                
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
                 secondCameraYaw -= CAMERA_SENSITIVITY;
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
                 secondCameraYaw += CAMERA_SENSITIVITY;
             }
-                
         }
         
         // On/Off
@@ -458,7 +468,7 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, mapTexture);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // already active texture shader
         glUseProgram(basicShader);
-        glUniform4f(uBasicShaderColor, 0.6, 0.9, 0.5, 0.25);
+        glUniform4f(uBasicShaderColor, 0.6f, 0.9f, 0.5f, 0.25f);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         // Restricted Zone
@@ -468,13 +478,18 @@ int main() {
 
         // Airplanes
         glUseProgram(airplaneShader);
-        glBindVertexArray(VAO[3]);
-        glUniform2f(uAirplaneShaderPosition, firstCameraPosition.x - FIRST_AIRPLANE_INITIAL_X, - firstCameraPosition.z - FIRST_AIRPLANE_INITIAL_Y);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesFirstAirplane) / (2 * sizeof(float)));
-        
-        glBindVertexArray(VAO[4]);
-        glUniform2f(uAirplaneShaderPosition, secondCameraPosition.x - SECOND_AIRPLANE_INITIAL_X, - secondCameraPosition.z - SECOND_AIRPLANE_INITIAL_Y);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesSecondAirplane) / (2 * sizeof(float)));
+
+        if (!isFirstAirplaneDestroyed) {
+            glBindVertexArray(VAO[3]);
+            glUniform2f(uAirplaneShaderPosition, firstCameraPosition.x - FIRST_AIRPLANE_INITIAL_X, - firstCameraPosition.z - FIRST_AIRPLANE_INITIAL_Y);
+            glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesFirstAirplane) / (2 * sizeof(float)));
+        }
+
+        if (!isSecondAirplaneDestroyed) {
+            glBindVertexArray(VAO[4]);
+            glUniform2f(uAirplaneShaderPosition, secondCameraPosition.x - SECOND_AIRPLANE_INITIAL_X, - secondCameraPosition.z - SECOND_AIRPLANE_INITIAL_Y);
+            glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesSecondAirplane) / (2 * sizeof(float)));
+        }
 
         // Indicators
         // Top
