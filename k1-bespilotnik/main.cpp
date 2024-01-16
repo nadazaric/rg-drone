@@ -117,6 +117,15 @@ bool isInRestricted(glm::vec3 drone) {
     return distance - CIRCLE_RESTRICTED_ZONE_RADIUS < 1e-6; // < CIRCLE_PLANE_RADIUS //ako hocu da pri dodiru vec nestane avion
 }
 
+void setFront(glm::vec3& cameraFront, float& cameraPitch, float cameraYaw) {
+    cameraPitch = glm::clamp(cameraPitch, -90.0f, -CAMERA_ANGLE); // Ograničavanje nagiba kamere
+    glm::vec3 front; // Računanje novog vektora gledišta
+    front.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch)); // yaw koliko smo lijevo/desno stepeni gledajuci po horizontali (koliko smo rotirani)
+    front.y = sin(glm::radians(cameraPitch)); // nagib kamere
+    front.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
+    cameraFront = normalize(front);
+}
+
 bool isColision(glm::vec3 firstDrone, glm::vec3 secondDrone) {
     float firstMinX = firstDrone.x - DRONE_OUTBOX_WIDTH / 2.0f;
     float firstMaxX = firstDrone.x + DRONE_OUTBOX_WIDTH / 2.0f;
@@ -377,6 +386,13 @@ int main() {
     basic3dShader.setVec3("uLightColor", 1, 1, 1);
     basic3dShader.setMat4("uP", projection);
     
+    setFront(firstCameraFront, firstCameraPitch, firstCameraYaw);
+    firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
+    basic3dShader.setMat4("uV", firstCameraView);
+    setFront(secondCameraFront, secondCameraPitch, secondCameraYaw);
+    secondCameraView = lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
+    basic3dShader.setMat4("uV", secondCameraView);
+    
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Loop
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -494,13 +510,7 @@ int main() {
             draw3D();
             basic3dShader.use();
         
-            firstCameraPitch = glm::clamp(firstCameraPitch, -90.0f, -CAMERA_ANGLE); // Ograničavanje nagiba kamere
-            glm::vec3 front; // Računanje novog vektora gledišta
-            front.x = cos(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch)); // yaw koliko smo lijevo/desno stepeni gledajuci po horizontali (koliko smo rotirani)
-            front.y = sin(glm::radians(firstCameraPitch)); // nagib kamere
-            front.z = sin(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch));
-            firstCameraFront = normalize(front);
-        
+            setFront(firstCameraFront, firstCameraPitch, firstCameraYaw);
             firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
             basic3dShader.setMat4("uV", firstCameraView);
         
@@ -529,14 +539,7 @@ int main() {
         if (isSecondDroneCameraActive)
         {
             draw3D();
-            secondCameraPitch = glm::clamp(secondCameraPitch, -90.0f, -CAMERA_ANGLE);
-            glm::vec3 front; // Računanje novog vektora gledišta
-            front.x = cos(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
-            front.y = sin(glm::radians(secondCameraPitch));
-            front.z = sin(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
-            secondCameraFront = glm::normalize(front);
-        
-            // Postavljanje kamere na zeljenu poziciju
+            setFront(secondCameraFront, secondCameraPitch, secondCameraYaw);
             secondCameraView = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
             basic3dShader.setMat4("uV", secondCameraView);
         
