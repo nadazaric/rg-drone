@@ -229,10 +229,6 @@ int main() {
     glEnableVertexAttribArray(0);
 
     // Indicators
-    bool isFirstAirplaneActive = false;
-    bool isSecondAirplaneActive = false;
-    bool isFirstAirplaneDestroyed = false;
-    bool isSecondAirplaneDestroyed = false;
     float verticesIndicators[] =
     {
         INDICATOR_LEFT, FIRST_INDICATOR_BOTTOM,
@@ -264,6 +260,14 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesProgressBar), verticesProgressBar, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, progressBarStride, (void*)0);
     glEnableVertexAttribArray(0);
+
+    // Drone bools
+    bool isFirstAirplaneActive = false;
+    bool isSecondAirplaneActive = false;
+    bool isFirstAirplaneDestroyed = false;
+    bool isSecondAirplaneDestroyed = false;
+    bool isFirstDroneOnLand = true;
+    bool isSecondDroneOnLand = true;
     
     // createMap();
     // createPlanes();
@@ -322,31 +326,34 @@ int main() {
             firstAirplaneProgress -= PROGRESS_BAR_OFFSET;
             // Prva kamera
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-                firstCameraPosition += CAMERA_SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
+                firstCameraPosition += SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
             // pomjeranje unaprijed, odnosno u smijeru u koji kamera gleda, firstCameraFront je vektor koji označava smjer gledanja kamere,
             // i njega mnozim sa brzinom kretanja, pa to dodam na trenutnu poziciju kamere
             // NAPOMENA:  da bih zadrzala zeljeni pravac, moram da uzmem x i z koordinate fronta, ali z moram da vratim na 0 da
             // ne bi moja kamera pocela da se krece prema zemlji i od zemlje umjesto naprijed i nazad
             if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-                firstCameraPosition -= CAMERA_SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
+                firstCameraPosition -= SPEED * glm::vec3(firstCameraFront.x, 0.0f, firstCameraFront.z);
             if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-                firstCameraPosition -= glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * CAMERA_SPEED;
+                firstCameraPosition -= glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * SPEED;
             // pomjeranje ulijeo, glm::cross(firstCameraFront, firstCameraUp)` daje vektor normalan na povrsinu
             // cross - daje vektorski proizvod, taj proizvod je ustvari normala na povrsinu
             // tu normalu normalizujemo (0-1) i onda taj vektor mnozimo sa brzinom kretanja
             // onda to sve oduzmemo/ dodamo u zavisnosti od kretanja lijevo/desno od trenutne pozicije
             if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-                firstCameraPosition += glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * CAMERA_SPEED; 
-            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
-                if (firstCameraPosition.y <= MAX_HEIGHT) firstCameraPosition  += CAMERA_SPEED * firstCameraUp;
+                firstCameraPosition += glm::normalize(glm::cross(firstCameraFront, firstCameraUp)) * SPEED; 
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                isFirstDroneOnLand = false;
+                if (firstCameraPosition.y <= MAX_HEIGHT) firstCameraPosition  += SPEED * firstCameraUp;
+            }
             // posto cameraUp oznacava sta je inad kamera (u ovom slucaju penjemo se po y osi, onda cameraUp ima (0,1,0) vrijednosti
             // onda to mnozimo s brzinom i dodajemo na poziciju kamere
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
             {
-                firstCameraPosition -= CAMERA_SPEED * firstCameraUp;
+                firstCameraPosition -= SPEED * firstCameraUp;
                 if (firstCameraPosition.y < MIN_HEIGHT) {
                     isFirstAirplaneDestroyed = true;
                     isFirstAirplaneActive = false;
+                    isFirstDroneOnLand = true;
                 }
             }
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
@@ -368,24 +375,26 @@ int main() {
             
             // Druga kamera
             if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-                secondCameraPosition += CAMERA_SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
+                secondCameraPosition += SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
             if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-                secondCameraPosition -= CAMERA_SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
+                secondCameraPosition -= SPEED * glm::vec3(secondCameraFront.x, 0.0f, secondCameraFront.z);
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-                secondCameraPosition -= glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * CAMERA_SPEED;
+                secondCameraPosition -= glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * SPEED;
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-                secondCameraPosition += glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * CAMERA_SPEED;
-            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-                if (secondCameraPosition.y <= MAX_HEIGHT) secondCameraPosition += CAMERA_SPEED * secondCameraUp;
+                secondCameraPosition += glm::normalize(glm::cross(secondCameraFront, secondCameraUp)) * SPEED;
+            if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+                isSecondDroneOnLand = false;
+                if (secondCameraPosition.y <= MAX_HEIGHT) secondCameraPosition += SPEED * secondCameraUp;
+            }
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
-                secondCameraPosition -= CAMERA_SPEED * secondCameraUp;
+                secondCameraPosition -= SPEED * secondCameraUp;
                 if (secondCameraPosition.y < MIN_HEIGHT) {
                     isSecondAirplaneDestroyed = true;
                     isSecondAirplaneActive = false;
+                    isSecondDroneOnLand = true;
                 }
             }
-                
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
                 secondCameraYaw -= CAMERA_SENSITIVITY;
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
@@ -398,6 +407,15 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isFirstAirplaneActive = false;
         if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isSecondAirplaneDestroyed) isSecondAirplaneActive = true;
         if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) isSecondAirplaneActive = false;
+
+        if (!isFirstAirplaneActive && !isFirstDroneOnLand) {
+            firstCameraPosition -= LAND_SPEED * firstCameraUp;
+            if (firstCameraPosition.y <= MIN_HEIGHT) isFirstDroneOnLand = true;
+        }
+        if (!isSecondAirplaneActive && !isSecondDroneOnLand) {
+            secondCameraPosition -= LAND_SPEED * secondCameraUp;
+            if (secondCameraPosition.y <= MIN_HEIGHT) isSecondDroneOnLand = true;
+        }
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render
         draw3D();

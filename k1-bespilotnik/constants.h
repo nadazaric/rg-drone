@@ -10,7 +10,8 @@ constexpr int WINDOW_HEIGHT = 1100;
 // Camera
 constexpr float CAMERA_SENSITIVITY = 0.7f;
 constexpr float INITIAL_CAMERA_ANGLE = -90.0f;
-constexpr float CAMERA_SPEED = 0.01f;
+constexpr float SPEED = 0.01f;
+constexpr float LAND_SPEED = 0.005f;
 constexpr float CAMERA_ANGLE = 30.0f;
 
 // Indicators
