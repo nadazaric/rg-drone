@@ -70,6 +70,14 @@ constexpr float PROGRESS_BAR_LEFT = -0.8f;
 constexpr float PROGRESS_BAR_WIDTH = 0.5;
 constexpr float PROGRESS_BAR_OFFSET = 0.001f;
 
+// Info text
+constexpr float INFO_LEFT = -1.0f;
+constexpr float INFO_RIGHT = 1.0f;
+constexpr float INFO_TOP = 1.0f;
+constexpr float INFO_BOTTOM = -1.0f;
+
 // Textures
 constexpr const char* MAP_TEXTURE_PATH = "textures/majevica-map.jpg";
 constexpr const char* TITLE_TEXTURE_PATH = "textures/name.png";
+constexpr const char* FIRST_DRONE_INFO_PATH = "textures/drone1_info_camera.png";
+constexpr const char* SECOND_DRONE_INFO_PATH = "textures/drone2_info_camera.png";

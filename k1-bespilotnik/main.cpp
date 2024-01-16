@@ -20,6 +20,8 @@ bool isFirstDroneDestroyed = false;
 bool isSecondDroneDestroyed = false;
 bool isFirstDroneOnLand = true;
 bool isSecondDroneOnLand = true;
+bool isFirstDroneCameraActive = false;
+bool isSecondDroneCameraActive = false;
 
 static unsigned loadImageToTexture(const char* filePath) {
     int TextureWidth;
@@ -164,10 +166,10 @@ int main() {
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2D
 
-    unsigned int VAO[7];
-    glGenVertexArrays(7, VAO);
-    unsigned int VBO[7];
-    glGenBuffers(7, VBO);
+    unsigned int VAO[8];
+    glGenVertexArrays(8, VAO);
+    unsigned int VBO[8];
+    glGenBuffers(8, VBO);
 
     // Shaders
     unsigned int basicShader = createShader("basic.vert", "basic.frag");
@@ -308,6 +310,39 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesProgressBar), verticesProgressBar, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, progressBarStride, (void*)0);
     glEnableVertexAttribArray(0);
+
+    // Background
+    float verticesBackground[] = {
+        INFO_LEFT, INFO_BOTTOM,   0.0, 0.0,    
+        INFO_LEFT, INFO_TOP,      0.0, 1.0,    
+        INFO_RIGHT, INFO_BOTTOM,  1.0, 0.0,    
+        INFO_RIGHT, INFO_TOP,     1.0, 1.0,  
+    };
+    unsigned int infoStride = (2 + 2) * sizeof(float);
+    
+    glBindVertexArray(VAO[7]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[7]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesBackground), verticesBackground, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, infoStride, (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, infoStride, (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    unsigned firstDroneInfoText = loadImageToTexture(FIRST_DRONE_INFO_PATH);
+    glBindTexture(GL_TEXTURE_2D, firstDroneInfoText);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    unsigned secondDroneInfoText = loadImageToTexture(SECOND_DRONE_INFO_PATH);
+    glBindTexture(GL_TEXTURE_2D, secondDroneInfoText);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
     
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -451,62 +486,79 @@ int main() {
             if (secondCameraPosition.y <= DRONE_MIN_HEIGHT) isSecondDroneOnLand = true;
         }
         
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render
-        draw3D();
-
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render (if exist)
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Top Window
         topViewport();
-        basic3dShader.use();
+        if (isFirstDroneCameraActive)
+        {
+            draw3D();
+            basic3dShader.use();
         
-        firstCameraPitch = glm::clamp(firstCameraPitch, -90.0f, -CAMERA_ANGLE); // Ograničavanje nagiba kamere
-        glm::vec3 front; // Računanje novog vektora gledišta
-        front.x = cos(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch)); // yaw koliko smo lijevo/desno stepeni gledajuci po horizontali (koliko smo rotirani)
-        front.y = sin(glm::radians(firstCameraPitch)); // nagib kamere
-        front.z = sin(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch));
-        firstCameraFront = normalize(front);
+            firstCameraPitch = glm::clamp(firstCameraPitch, -90.0f, -CAMERA_ANGLE); // Ograničavanje nagiba kamere
+            glm::vec3 front; // Računanje novog vektora gledišta
+            front.x = cos(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch)); // yaw koliko smo lijevo/desno stepeni gledajuci po horizontali (koliko smo rotirani)
+            front.y = sin(glm::radians(firstCameraPitch)); // nagib kamere
+            front.z = sin(glm::radians(firstCameraYaw)) * cos(glm::radians(firstCameraPitch));
+            firstCameraFront = normalize(front);
         
-        firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
-        basic3dShader.setMat4("uV", firstCameraView);
+            firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
+            basic3dShader.setMat4("uV", firstCameraView);
         
-        basic3dShader.setMat4("uM", glm::mat4(1.0f)); // Prikaz mape za prvu kameru
-        map.Draw(basic3dShader);
+            basic3dShader.setMat4("uM", glm::mat4(1.0f)); // Prikaz mape za prvu kameru
+            map.Draw(basic3dShader);
 
-        // Prikaz drugog aviona za prvu mapu
-        if (!isSecondDroneDestroyed) {
-            glm::mat4 model = glm::mat4(1.0f);
-            moveTo(model, secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z);
-            rotateTo(model, secondCameraYaw);
-            basic3dShader.setMat4("uM", model);
-            secondDroneModel.Draw(basic3dShader);
+            // Prikaz drugog aviona za prvu mapu
+            if (!isSecondDroneDestroyed) {
+                glm::mat4 model = glm::mat4(1.0f);
+                moveTo(model, secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z);
+                rotateTo(model, secondCameraYaw);
+                basic3dShader.setMat4("uM", model);
+                secondDroneModel.Draw(basic3dShader);
+            }
+        } else {
+            draw2D();
+            glUseProgram(textureShader);
+            glBindVertexArray(VAO[7]);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, firstDroneInfoText);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); 
         }
-       
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bottom Window
         bottomViewport();
+        if (isSecondDroneCameraActive)
+        {
+            draw3D();
+            secondCameraPitch = glm::clamp(secondCameraPitch, -90.0f, -CAMERA_ANGLE);
+            glm::vec3 front; // Računanje novog vektora gledišta
+            front.x = cos(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
+            front.y = sin(glm::radians(secondCameraPitch));
+            front.z = sin(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
+            secondCameraFront = glm::normalize(front);
         
-        // Računanje novog vektora gledišta
-        secondCameraPitch = glm::clamp(secondCameraPitch, -90.0f, -CAMERA_ANGLE);
-        front.x = cos(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
-        front.y = sin(glm::radians(secondCameraPitch));
-        front.z = sin(glm::radians(secondCameraYaw)) * cos(glm::radians(secondCameraPitch));
-        secondCameraFront = glm::normalize(front);
+            // Postavljanje kamere na zeljenu poziciju
+            secondCameraView = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
+            basic3dShader.setMat4("uV", secondCameraView);
         
-        // Postavljanje kamere na zeljenu poziciju
-        secondCameraView = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
-        basic3dShader.setMat4("uV", secondCameraView);
+            basic3dShader.setMat4("uM", glm::mat4(1.0f));
+            map.Draw(basic3dShader);
         
-        basic3dShader.setMat4("uM", glm::mat4(1.0f));
-        map.Draw(basic3dShader);
-        
-        // Prikaz prvog aviona za drugu mapu
-        if (!isFirstDroneDestroyed) {
-            glm::mat4 model = glm::mat4(1.0f);
-            moveTo(model, firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z);
-            rotateTo(model, firstCameraYaw);
-            basic3dShader.setMat4("uM", model);
-            firstDroneModel.Draw(basic3dShader);
+            // Prikaz prvog aviona za drugu mapu
+            if (!isFirstDroneDestroyed) {
+                glm::mat4 model = glm::mat4(1.0f);
+                moveTo(model, firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z);
+                rotateTo(model, firstCameraYaw);
+                basic3dShader.setMat4("uM", model);
+                firstDroneModel.Draw(basic3dShader);
+            }
+        } else {
+            draw2D();
+            glUseProgram(textureShader);
+            glBindVertexArray(VAO[7]);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, secondDroneInfoText);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); 
         }
-       
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2D Render
         draw2D();
@@ -589,14 +641,18 @@ int main() {
     // Delete Textures
     glDeleteTextures(1, &nameTexture);
     glDeleteTextures(1, &mapTexture);
+    // glDeleteTextures(1, &firstDroneInfoText);
+    // glDeleteTextures(1, &secondDroneInfoText);
 
     // Delete VBO and VAO
-    glDeleteBuffers(7, VBO);
-    glDeleteVertexArrays(7, VAO);
+    glDeleteBuffers(9, VBO);
+    glDeleteVertexArrays(9, VAO);
 
     // Delete shaders
     glDeleteProgram(basicShader);
     glDeleteProgram(textureShader);
+    glDeleteProgram(droneShader);
+    glDeleteProgram(progressBarShader);
     
     glfwTerminate();
     return 0;
