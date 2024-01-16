@@ -8,8 +8,9 @@ constexpr int WINDOW_WIDTH = 1100;
 constexpr int WINDOW_HEIGHT = 1100;
 
 // Camera
-constexpr float CAMERA_SENSITIVITY = 0.2f;
-constexpr float CAMERA_SPEED = 0.001f;
+constexpr float CAMERA_SENSITIVITY = 0.7f;
+constexpr float INITIAL_CAMERA_ANGLE = -90.0f;
+constexpr float CAMERA_SPEED = 0.01f;
 constexpr float CAMERA_ANGLE = 30.0f;
 
 // Indicators
@@ -36,7 +37,7 @@ constexpr float PROGRESS_BAR_TOP = -0.75f;
 constexpr float PROGRESS_BAR_BOTTOM = -0.95f;
 constexpr float PROGRESS_BAR_LEFT = -0.8f;
 constexpr float PROGRESS_BAR_WIDTH = 0.5;
-constexpr float PROGRESS_BAR_OFFSET = 0.0001f;
+constexpr float PROGRESS_BAR_OFFSET = 0.0000001f;
 
 constexpr int CIRCLE_RESOLUTION = 50;
 constexpr float CIRCLE_PLANE_RADIUS = 0.03;
@@ -52,7 +53,7 @@ constexpr float FIRST_PLANE_B = 1.0;
 constexpr float SECOND_PLANE_R = 0.2;
 constexpr float SECOND_PLANE_G = 0.5;
 constexpr float SECOND_PLANE_B = 1.0;
-constexpr float PLANE_SPEED = 0.001;
+constexpr float PLANE_SPEED = 0.1f;
 
 
 constexpr float SECOND_PROGRESS_BAR_LEFT = 0.45;

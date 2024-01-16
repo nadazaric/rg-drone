@@ -78,6 +78,12 @@ void draw3D() {
     glEnable(GL_CULL_FACE);
 }
 
+void moveTo(glm::mat4& mat, float x, float y, float z) {
+    mat[3][0] = x;
+    mat[3][1] = y - 0.1f;
+    mat[3][2] = z;
+}
+
 int main() {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Init libs
     if (!glfwInit()) {
@@ -271,17 +277,19 @@ int main() {
     glm::vec3 firstCameraPosition = glm::vec3(FIRST_AIRPLANE_INITIAL_X, FIRST_AIRPLANE_INITIAL_HEIGHT, FIRST_AIRPLANE_INITIAL_Y + 1.0f);
     glm::vec3 firstCameraFront = glm::vec3(0.0f, 0.0f, 0.1f); // vektor koji odredjuje smijer gledanja kamere
     glm::vec3 firstCameraUp = glm::vec3(0.0f, 1.0f, 0.0f); // znaci da je "gore" usmjereno prema pozitivnom y-smjeru (oznacava sta je gore u odnosu na kameru)
-    float firstCameraYaw = -90.0f; // vrijednost "skretanja" koliko idemo gledamo ulijevo ili udesno po horizontali (yaw value which represents the magnitude we're looking to the left or to the right)
+    float firstCameraYaw = INITIAL_CAMERA_ANGLE; // vrijednost "skretanja" koliko idemo gledamo ulijevo ili udesno po horizontali (yaw value which represents the magnitude we're looking to the left or to the right)
     float firstCameraPitch = 0.0f; // koliko gledamo gore/dole (angle that depicts how much we're looking up or down)
 
     glm::mat4 secondCameraView;
     glm::vec3 secondCameraPosition = glm::vec3(SECOND_AIRPLANE_INITIAL_X, SECOND_AIRPLANE_INITIAL_HEIGHT, SECOND_AIRPLANE_INITIAL_Y + 1.0f);
     glm::vec3 secondCameraFront = glm::vec3(0.0f, 0.0f, 0.1f);
     glm::vec3 secondCameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    float secondCameraYaw = -90.0f;
+    float secondCameraYaw = INITIAL_CAMERA_ANGLE;
     float secondCameraPitch = 0.0f;
     
     Model map("res/map.obj");
+    Model firstDroneModel("res/drone.obj");
+    Model secondDroneModel("res/drone.obj");
 
     // Postavi svjetlo i projekciju
     basic3dShader.use();
@@ -397,6 +405,13 @@ int main() {
         basic3dShader.setMat4("uM", glm::mat4(1.0f)); // Prikaz mape za prvu kameru
         map.Draw(basic3dShader);
 
+        // Prikaz drugog aviona za prvu mapu
+        glm::mat4 model = glm::mat4(1.0f);
+        moveTo(model, secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z);
+        model = glm::rotate(model, -glm::radians(secondCameraYaw - INITIAL_CAMERA_ANGLE), glm::vec3(0.0f, 1.0f, 0.0f));
+        basic3dShader.setMat4("uM", model);
+        secondDroneModel.Draw(basic3dShader);
+
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bottom Window
         bottomViewport();
         
@@ -413,6 +428,13 @@ int main() {
         
         basic3dShader.setMat4("uM", glm::mat4(1.0f));
         map.Draw(basic3dShader);
+        
+        // Prikaz drugog aviona za prvu mapu
+        model = glm::mat4(1.0f);
+        moveTo(model, firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z);
+        model = glm::rotate(model, -glm::radians(firstCameraYaw - INITIAL_CAMERA_ANGLE), glm::vec3(0.0f, 1.0f, 0.0f));
+        basic3dShader.setMat4("uM", model);
+        firstDroneModel.Draw(basic3dShader);
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2D Render
         draw2D();
