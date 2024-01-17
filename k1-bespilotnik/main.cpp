@@ -435,6 +435,13 @@ int main() {
     basic3dShader.setVec3("uViewPos", 0, 0, 5);
     basic3dShader.setVec3("uLightColor", 1, 1, 1);
     basic3dShader.setMat4("uP", projection);
+
+    basic3dShader.setVec3("uPointLights[0].color", 1.0f, 0.0f, 0.0f);
+    basic3dShader.setVec3("uPointLights[1].color", 0.0f, 1.0f, 0.0f);
+    basic3dShader.setVec3("uPointLights[2].color", 1.0f, 1.0f, 1.0f);
+    basic3dShader.setVec3("uPointLights[3].color", 1.0f, 0.0f, 0.0f);
+    basic3dShader.setVec3("uPointLights[4].color", 0.0f, 1.0f, 0.0f);
+    basic3dShader.setVec3("uPointLights[5].color", 1.0f, 1.0f, 1.0f);
     
     setFront(firstCameraFront, firstCameraPitch, firstCameraYaw);
     firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
@@ -578,26 +585,26 @@ int main() {
             basic3dShader.setVec3("uPointLights[0].position", firstCameraPosition.x - DRONE_OUTBOX_WIDTH / 2, firstCameraPosition.y, firstCameraPosition.z);
             basic3dShader.setVec3("uPointLights[1].position", firstCameraPosition.x + DRONE_OUTBOX_WIDTH / 2, firstCameraPosition.y, firstCameraPosition.z);
             basic3dShader.setVec3("uPointLights[2].position", firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z + DRONE_OUTBOX_WIDTH / 2);
-            basic3dShader.setVec3("uPointLights[0].color", 1.0f, 0.0f, 0.0f);
-            basic3dShader.setVec3("uPointLights[1].color", 0.0f, 1.0f, 0.0f);
-            basic3dShader.setVec3("uPointLights[2].color", 1.0f, 1.0f, 1.0f);
+            basic3dShader.setFloat("uPointLights[0].diffuseStrength", 0.3f);
+            basic3dShader.setFloat("uPointLights[1].diffuseStrength", 0.3f);
+            basic3dShader.setFloat("uPointLights[2].diffuseStrength", 0.2f);
         } else {
-            basic3dShader.setVec3("uPointLights[0].color", 0.0f, 0.0f, 0.0f);
-            basic3dShader.setVec3("uPointLights[1].color", 0.0f, 0.0f, 0.0f);
-            basic3dShader.setVec3("uPointLights[2].color", 0.0f, 0.0f, 0.0f);
+            basic3dShader.setFloat("uPointLights[0].diffuseStrength", 0.0f);
+            basic3dShader.setFloat("uPointLights[1].diffuseStrength", 0.0f);
+            basic3dShader.setFloat("uPointLights[2].diffuseStrength", 0.0f);
         }
         if (isSecondDroneActive)
         {
             basic3dShader.setVec3("uPointLights[3].position", secondCameraPosition.x - DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
             basic3dShader.setVec3("uPointLights[4].position", secondCameraPosition.x + DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
             basic3dShader.setVec3("uPointLights[5].position", secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z + DRONE_OUTBOX_WIDTH / 2);
-            basic3dShader.setVec3("uPointLights[3].color", 1.0f, 0.0f, 0.0f);
-            basic3dShader.setVec3("uPointLights[4].color", 0.0f, 1.0f, 0.0f);
-            basic3dShader.setVec3("uPointLights[5].color", 1.0f, 1.0f, 1.0f);
+            basic3dShader.setFloat("uPointLights[3].diffuseStrength", 0.3f);
+            basic3dShader.setFloat("uPointLights[4].diffuseStrength", 0.3f);
+            basic3dShader.setFloat("uPointLights[5].diffuseStrength", 0.2f);
         } else {
-            basic3dShader.setVec3("uPointLights[3].color", 0.0f, 0.0f, 0.0f);
-            basic3dShader.setVec3("uPointLights[4].color", 0.0f, 0.0f, 0.0f);
-            basic3dShader.setVec3("uPointLights[5].color", 0.0f, 0.0f, 0.0f);
+            basic3dShader.setFloat("uPointLights[3].diffuseStrength", 0.0f);
+            basic3dShader.setFloat("uPointLights[4].diffuseStrength", 0.0f);
+            basic3dShader.setFloat("uPointLights[5].diffuseStrength", 0.0f);
         }
         
         

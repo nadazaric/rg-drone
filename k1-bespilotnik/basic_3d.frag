@@ -12,8 +12,9 @@ uniform vec3 uLightColor;
 struct PointLight {
     vec3 position;
     vec3 color;
+    float diffuseStrength;
 };
-uniform PointLight uPointLights[5];
+uniform PointLight uPointLights[6];
 
 uniform sampler2D uDiffMap1;
 
@@ -22,7 +23,7 @@ void main()
     vec3 result = vec3(0.0);
 
     // ------------------------------------------------------------------------------ Directional Light
-    float ambientStrength = 0.3;
+    float ambientStrength = 0.2;
     vec3 ambient = ambientStrength * uLightColor;
 
     // diffuse 
@@ -51,7 +52,7 @@ void main()
         vec3 norm = normalize(chNormal);
         vec3 lightDir = normalize(uPointLights[i].position - chFragPos);
         float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = diff * uPointLights[i].color * diffuseStrength;
+        vec3 diffuse = diff * uPointLights[i].color * uPointLights[i].diffuseStrength;
 
         // specular
         float specularStrength = 0.3;
