@@ -64,11 +64,13 @@ static unsigned loadImageToTexture(const char* filePath) {
 }
 
 void topViewport() {
-    glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2); 
+    glViewport(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2);
+    glScissor(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2);
 }
 
 void bottomViewport() {
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2);    
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2);
+    glScissor(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2);
 }
 
 void mapViewport(){
@@ -86,9 +88,9 @@ void draw2D() {
 }
 
 void draw3D() {
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_SCISSOR_TEST);
-    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST); // depth test - objekti blize kameri prekrivaju one iza kamere ((z-buffering)
+    glEnable(GL_SCISSOR_TEST); // sve sto se nalazi unutar  pravougaonog prozora (scissor box) se prikazuje, ostalo se odbacuje, u kombinaciji sa glScissor (linija 73)
+    glEnable(GL_CULL_FACE); // backface culling - ostavlja samo one trouglove cije su prednje strane vidljive
 }
 
 void moveTo(glm::mat4& mat, float x, float y, float z) {
@@ -724,7 +726,7 @@ int main() {
             float scale = mapValue(secondCameraPosition.y, DRONE_MIN_HEIGHT, DRONE_MAX_HEIGHT, 0.15f, 0.23f);
             glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(secondCameraPosition.x, -secondCameraPosition.z, 0.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, 0.0f));
-            glUniformMatrix4fv(uDroneShaderModelMatrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+            glUniformMatrix4fv(uDroneShaderModelMatrix, 1, GL_FALSE, glm::value_ptr(modelMatrix)); // value_ptr - vraca pokazivac na podatke u matrici
             glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesSecondAirplane) / (2 * sizeof(float)));
         }
 
