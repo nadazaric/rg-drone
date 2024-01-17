@@ -1,6 +1,4 @@
 #pragma once
-#include <iostream>
-#include <string>
 
 // Global
 constexpr const char* TITLE = "Bespilotnik";
@@ -28,10 +26,10 @@ constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_X = 0.0f;
 constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_Y = 0.2f;
 
 // Camera
-constexpr float CAMERA_SENSITIVITY = 0.51f;
+constexpr float CAMERA_SENSITIVITY = 0.5f;
 constexpr float INITIAL_CAMERA_ANGLE = -90.0f;
-constexpr float SPEED = 0.001f;
-constexpr float LAND_SPEED = 0.005f;
+constexpr float SPEED = 0.003f;
+constexpr float LAND_SPEED = 0.001f;
 constexpr float CAMERA_ANGLE = 30.0f;
 
 // Indicators
@@ -48,11 +46,11 @@ constexpr float INACTIVE_INDICATOR_B = 0.0f;
 
 // Drones
 constexpr float CIRCLE_DRONE_RADIUS = 0.05f;
-constexpr float DRONE_OUTBOX_WIDTH = 0.15f;
-constexpr float DRONE_OUTBOX_LENGTH = 0.15f;
-constexpr float DRONE_OUTBOX_HEIGHT = 0.05f;
+constexpr float DRONE_OUTBOX_WIDTH = 0.14f;
+constexpr float DRONE_OUTBOX_LENGTH = 0.14f;
+constexpr float DRONE_OUTBOX_HEIGHT = 0.02f;
 constexpr float DRONE_MIN_HEIGHT = 0.1f;
-constexpr float DRONE_MAX_HEIGHT = 1.0f;
+constexpr float DRONE_MAX_HEIGHT = 1.2f;
 constexpr float DRONE_R = 0.2f;
 constexpr float DRONE_G = 0.5f;
 constexpr float DRONE_B = 1.0f;
@@ -68,8 +66,8 @@ constexpr float PROGRESS_BAR_TOP = -0.75f;
 constexpr float PROGRESS_BAR_BOTTOM = -0.95f;
 constexpr float PROGRESS_BAR_LEFT = -0.8f;
 constexpr float PROGRESS_BAR_WIDTH = 0.5;
-constexpr float CONSUMPTION_DRONE_ACTIVE = 0.000008f;
-constexpr float CONSUMPTION_CAMERA_ON = 0.000002f;
+constexpr float CONSUMPTION_DRONE_ACTIVE = 0.00008f;
+constexpr float CONSUMPTION_CAMERA_ON = 0.00002f;
 
 // Info text
 constexpr float INFO_LEFT = -1.0f;

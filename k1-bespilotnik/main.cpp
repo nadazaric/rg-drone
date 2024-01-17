@@ -177,7 +177,7 @@ void setFront(glm::vec3& cameraFront, float& cameraPitch, float cameraYaw) {
 }
 
 bool isColision(glm::vec3 firstDrone, glm::vec3 secondDrone) {
-    if (!isFirstDroneDestroyed || !isSecondDroneDestroyed) return false;
+    if (isFirstDroneDestroyed || isSecondDroneDestroyed) return false;
     
     float firstMinX = firstDrone.x - DRONE_OUTBOX_WIDTH / 2.0f;
     float firstMaxX = firstDrone.x + DRONE_OUTBOX_WIDTH / 2.0f;
