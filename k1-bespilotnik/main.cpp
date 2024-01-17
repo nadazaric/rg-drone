@@ -520,12 +520,12 @@ int main() {
         }
 
         // Check Errors
-        if (isOutOfMap(firstCameraPosition) || isInRestricted(firstCameraPosition)) destroyDrone(1);
-        if (isOutOfMap(secondCameraPosition) || isInRestricted(secondCameraPosition)) destroyDrone(2);
-        if (isColision(firstCameraPosition, secondCameraPosition)) {
-            destroyDrone(1);
-            destroyDrone(2);
-        }
+        // if (isOutOfMap(firstCameraPosition) || isInRestricted(firstCameraPosition)) destroyDrone(1);
+        // if (isOutOfMap(secondCameraPosition) || isInRestricted(secondCameraPosition)) destroyDrone(2);
+        // if (isColision(firstCameraPosition, secondCameraPosition)) {
+        //     destroyDrone(1);
+        //     destroyDrone(2);
+        // }
         
         // On/Off Drone
         if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isFirstDroneDestroyed) turnOnDrone(1);
@@ -569,24 +569,37 @@ int main() {
         }
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render
-        if (isFirstDroneActive || isSecondDroneActive)
+
+        // Set lights
+        draw3D();
+        basic3dShader.use();
+        if (isFirstDroneActive)
         {
-            draw3D();
-            basic3dShader.use();
-            if (isSecondDroneActive)
-            {
-                basic3dShader.setVec3("uPointLights[0].position", secondCameraPosition.x - DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
-                basic3dShader.setVec3("uPointLights[1].position", secondCameraPosition.x + DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
-                basic3dShader.setVec3("uPointLights[2].position", secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z + DRONE_OUTBOX_WIDTH / 2);
-                basic3dShader.setVec3("uPointLights[0].color", 1.0f, 0.0f, 0.0f);
-                basic3dShader.setVec3("uPointLights[1].color", 0.0f, 1.0f, 0.0f);
-                basic3dShader.setVec3("uPointLights[2].color", 1.0f, 1.0f, 1.0f);
-            } else {
-                basic3dShader.setVec3("uPointLights[0].color", 0.0f, 0.0f, 0.0f);
-                basic3dShader.setVec3("uPointLights[1].color", 0.0f, 0.0f, 0.0f);
-                basic3dShader.setVec3("uPointLights[2].color", 0.0f, 0.0f, 0.0f);
-            }
+            basic3dShader.setVec3("uPointLights[0].position", firstCameraPosition.x - DRONE_OUTBOX_WIDTH / 2, firstCameraPosition.y, firstCameraPosition.z);
+            basic3dShader.setVec3("uPointLights[1].position", firstCameraPosition.x + DRONE_OUTBOX_WIDTH / 2, firstCameraPosition.y, firstCameraPosition.z);
+            basic3dShader.setVec3("uPointLights[2].position", firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z + DRONE_OUTBOX_WIDTH / 2);
+            basic3dShader.setVec3("uPointLights[0].color", 1.0f, 0.0f, 0.0f);
+            basic3dShader.setVec3("uPointLights[1].color", 0.0f, 1.0f, 0.0f);
+            basic3dShader.setVec3("uPointLights[2].color", 1.0f, 1.0f, 1.0f);
+        } else {
+            basic3dShader.setVec3("uPointLights[0].color", 0.0f, 0.0f, 0.0f);
+            basic3dShader.setVec3("uPointLights[1].color", 0.0f, 0.0f, 0.0f);
+            basic3dShader.setVec3("uPointLights[2].color", 0.0f, 0.0f, 0.0f);
         }
+        if (isSecondDroneActive)
+        {
+            basic3dShader.setVec3("uPointLights[3].position", secondCameraPosition.x - DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
+            basic3dShader.setVec3("uPointLights[4].position", secondCameraPosition.x + DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
+            basic3dShader.setVec3("uPointLights[5].position", secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z + DRONE_OUTBOX_WIDTH / 2);
+            basic3dShader.setVec3("uPointLights[3].color", 1.0f, 0.0f, 0.0f);
+            basic3dShader.setVec3("uPointLights[4].color", 0.0f, 1.0f, 0.0f);
+            basic3dShader.setVec3("uPointLights[5].color", 1.0f, 1.0f, 1.0f);
+        } else {
+            basic3dShader.setVec3("uPointLights[3].color", 0.0f, 0.0f, 0.0f);
+            basic3dShader.setVec3("uPointLights[4].color", 0.0f, 0.0f, 0.0f);
+            basic3dShader.setVec3("uPointLights[5].color", 0.0f, 0.0f, 0.0f);
+        }
+        
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Top Window
         topViewport();

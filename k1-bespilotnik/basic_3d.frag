@@ -42,7 +42,7 @@ void main()
     result += ambient + diffuse + specular;
 
     // ------------------------------------------------------------------------------ Point Light
-    for(int i = 0; i < 1; i++) {
+    for(int i = 0; i < 6; i++) {
         float ambientStrength = 0.05;
         vec3 ambient = ambientStrength * uLightColor;
 
