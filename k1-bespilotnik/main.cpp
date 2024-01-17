@@ -24,6 +24,8 @@ bool isFirstDroneCameraActive = false;
 bool isSecondDroneCameraActive = false;
 
 // Drone consts
+float firstDroneConsumptionProgress = 1.0f;
+float secondDroneConsumptionProgress = 1.0f;
 float firstDroneConsumption = 0.0f;
 float secondDroneConsumption = 0.0f;
 
@@ -99,24 +101,12 @@ void rotateTo(glm::mat4& mat, float angle) {
     mat = glm::rotate(mat, -glm::radians(angle - INITIAL_CAMERA_ANGLE), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-void destroyFirstDrone() {
-    isFirstDroneActive = false;
-    isFirstDroneOnLand = true;
-    isFirstDroneDestroyed = true;
-}
-
-void destroySecondDrone() {
-    isSecondDroneActive = false;
-    isSecondDroneOnLand = true;
-    isSecondDroneDestroyed = true;
-}
-
 void turnOnDrone(int droneNum)
 {
-    if (droneNum == 1 && !isFirstDroneActive) {
+    if (droneNum == 1 && !isFirstDroneActive && firstDroneConsumptionProgress > 0.0f) {
         isFirstDroneActive = true;
         firstDroneConsumption += CONSUMPTION_DRONE_ACTIVE;
-    } else if (droneNum == 2 && !isSecondDroneActive)  {
+    } else if (droneNum == 2 && !isSecondDroneActive && secondDroneConsumptionProgress > 0.0f)  {
         isSecondDroneActive = true;
         secondDroneConsumption += CONSUMPTION_DRONE_ACTIVE;
     }
@@ -135,10 +125,10 @@ void turnOffDrone(int droneNum)
 
 void turnOnCamera(int droneNum)
 {
-    if (droneNum == 1 && !isFirstDroneCameraActive) {
+    if (droneNum == 1 && !isFirstDroneCameraActive && firstDroneConsumptionProgress > 0.0f) {
         isFirstDroneCameraActive = true;
         firstDroneConsumption += CONSUMPTION_CAMERA_ON;
-    } else if (droneNum == 2 && !isSecondDroneCameraActive)  {
+    } else if (droneNum == 2 && !isSecondDroneCameraActive && secondDroneConsumptionProgress > 0.0f)  {
         isSecondDroneCameraActive = true;
         secondDroneConsumption += CONSUMPTION_CAMERA_ON;
     }
@@ -153,6 +143,18 @@ void turnOffCamera(int droneNum)
         isSecondDroneCameraActive = false;
         secondDroneConsumption -= CONSUMPTION_CAMERA_ON;
     }
+}
+
+void destroyDrone(int droneNum){
+    if (droneNum == 1) {
+        isFirstDroneDestroyed = true;
+        isFirstDroneOnLand = true;
+    } else {
+        isSecondDroneDestroyed = true;
+        isSecondDroneOnLand = true;
+    }
+    turnOffCamera(droneNum);
+    turnOffDrone(droneNum);
 }
 
 bool isOutOfMap(glm::vec3 drone) {
@@ -175,6 +177,8 @@ void setFront(glm::vec3& cameraFront, float& cameraPitch, float cameraYaw) {
 }
 
 bool isColision(glm::vec3 firstDrone, glm::vec3 secondDrone) {
+    if (!isFirstDroneDestroyed || !isSecondDroneDestroyed) return false;
+    
     float firstMinX = firstDrone.x - DRONE_OUTBOX_WIDTH / 2.0f;
     float firstMaxX = firstDrone.x + DRONE_OUTBOX_WIDTH / 2.0f;
     float firstMinY = firstDrone.y - DRONE_OUTBOX_HEIGHT / 2.0f;
@@ -352,8 +356,6 @@ int main() {
     glEnableVertexAttribArray(0);
 
     // Progress Bars
-    float firstAirplaneProgress = 1.0f;
-    float secondAirplaneProgress = 1.0f;
     float verticesProgressBar[] = {
         PROGRESS_BAR_LEFT, PROGRESS_BAR_BOTTOM,                         
         PROGRESS_BAR_LEFT, PROGRESS_BAR_TOP,                            
@@ -480,7 +482,7 @@ int main() {
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
             {
                 firstCameraPosition -= SPEED * firstCameraUp;
-                if (firstCameraPosition.y < DRONE_MIN_HEIGHT) destroyFirstDrone();
+                if (firstCameraPosition.y < DRONE_MIN_HEIGHT) destroyDrone(1);
             }
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
                 firstCameraYaw -= CAMERA_SENSITIVITY;
@@ -508,7 +510,7 @@ int main() {
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
                 secondCameraPosition -= SPEED * secondCameraUp;
-                if (secondCameraPosition.y < DRONE_MIN_HEIGHT) destroySecondDrone();
+                if (secondCameraPosition.y < DRONE_MIN_HEIGHT) destroyDrone(2);
             }
             if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
                 secondCameraYaw -= CAMERA_SENSITIVITY;
@@ -518,11 +520,11 @@ int main() {
         }
 
         // Check Errors
-        if (isOutOfMap(firstCameraPosition) || isInRestricted(firstCameraPosition)) destroyFirstDrone();
-        if (isOutOfMap(secondCameraPosition) || isInRestricted(secondCameraPosition)) destroySecondDrone();
+        if (isOutOfMap(firstCameraPosition) || isInRestricted(firstCameraPosition)) destroyDrone(1);
+        if (isOutOfMap(secondCameraPosition) || isInRestricted(secondCameraPosition)) destroyDrone(2);
         if (isColision(firstCameraPosition, secondCameraPosition)) {
-            destroyFirstDrone();
-            destroySecondDrone();
+            destroyDrone(1);
+            destroyDrone(2);
         }
         
         // On/Off Drone
@@ -539,18 +541,24 @@ int main() {
 
 
         // Consumption progress
-        if (firstAirplaneProgress >= 0) firstAirplaneProgress -= firstDroneConsumption;
+        if (firstDroneConsumptionProgress >= 0) firstDroneConsumptionProgress -= firstDroneConsumption;
         else {
-            isFirstDroneActive = false;
-            isFirstDroneDestroyed = true;
+            if (isFirstDroneActive) destroyDrone(1); // ako dok je aktivan izgubi bateriju unisti se
+            else {
+                turnOffDrone(1); // ako nije aktivan, ako je samo upaljena kameraonda samo iskljuci drona
+                turnOffCamera(1);
+            }
         }
-        if (secondAirplaneProgress >= 0) secondAirplaneProgress -= secondDroneConsumption;
+        if (secondDroneConsumptionProgress >= 0) secondDroneConsumptionProgress -= secondDroneConsumption;
         else {
-            isSecondDroneActive = false;
-            isSecondDroneDestroyed = true;
+            if (isSecondDroneActive) destroyDrone(2);
+            else {
+                turnOffDrone(2);
+                turnOffCamera(2);
+            }
         }
         
-        // Is Destroyed
+        // Land Drone
         if (!isFirstDroneActive && !isFirstDroneOnLand) {
             firstCameraPosition -= LAND_SPEED * firstCameraUp;
             if (firstCameraPosition.y <= DRONE_MIN_HEIGHT) isFirstDroneOnLand = true;
@@ -677,7 +685,7 @@ int main() {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glUseProgram(progressBarShader);
-        glUniform1f(uProgressBarShaderProgress, firstAirplaneProgress);
+        glUniform1f(uProgressBarShaderProgress, firstDroneConsumptionProgress);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         // Bottom
@@ -693,7 +701,7 @@ int main() {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glUseProgram(progressBarShader);
-        glUniform1f(uProgressBarShaderProgress, secondAirplaneProgress);
+        glUniform1f(uProgressBarShaderProgress, secondDroneConsumptionProgress);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glfwSwapBuffers(window);
