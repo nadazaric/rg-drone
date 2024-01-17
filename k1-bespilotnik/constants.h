@@ -28,9 +28,9 @@ constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_X = 0.0f;
 constexpr float CIRCLE_RESTRICTED_ZONE_CENTER_Y = 0.2f;
 
 // Camera
-constexpr float CAMERA_SENSITIVITY = 0.7f;
+constexpr float CAMERA_SENSITIVITY = 0.51f;
 constexpr float INITIAL_CAMERA_ANGLE = -90.0f;
-constexpr float SPEED = 0.01f;
+constexpr float SPEED = 0.001f;
 constexpr float LAND_SPEED = 0.005f;
 constexpr float CAMERA_ANGLE = 30.0f;
 
@@ -68,8 +68,8 @@ constexpr float PROGRESS_BAR_TOP = -0.75f;
 constexpr float PROGRESS_BAR_BOTTOM = -0.95f;
 constexpr float PROGRESS_BAR_LEFT = -0.8f;
 constexpr float PROGRESS_BAR_WIDTH = 0.5;
-constexpr float CONSUMPTION_DRONE_ACTIVE = 0.00008f;
-constexpr float CONSUMPTION_CAMERA_ON = 0.00002f;
+constexpr float CONSUMPTION_DRONE_ACTIVE = 0.000008f;
+constexpr float CONSUMPTION_CAMERA_ON = 0.000002f;
 
 // Info text
 constexpr float INFO_LEFT = -1.0f;

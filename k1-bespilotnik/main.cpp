@@ -219,6 +219,7 @@ int main() {
         return 1;
     }
     glfwMakeContextCurrent(window); //Window to be active window
+    glfwSwapInterval(1); // vertikalna sinhronizacija ukljucena - brzina renderovanja jednaka refresh rate monitora
 
     if (glewInit() != GLEW_OK) {
         cout << "GLEW init fail!" << endl;
@@ -527,12 +528,12 @@ int main() {
         }
 
         // Check Errors
-        // if (isOutOfMap(firstCameraPosition) || isInRestricted(firstCameraPosition)) destroyDrone(1);
-        // if (isOutOfMap(secondCameraPosition) || isInRestricted(secondCameraPosition)) destroyDrone(2);
-        // if (isColision(firstCameraPosition, secondCameraPosition)) {
-        //     destroyDrone(1);
-        //     destroyDrone(2);
-        // }
+        if (isOutOfMap(firstCameraPosition) || isInRestricted(firstCameraPosition)) destroyDrone(1);
+        if (isOutOfMap(secondCameraPosition) || isInRestricted(secondCameraPosition)) destroyDrone(2);
+        if (isColision(firstCameraPosition, secondCameraPosition)) {
+            destroyDrone(1);
+            destroyDrone(2);
+        }
         
         // On/Off Drone
         if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !isFirstDroneDestroyed) turnOnDrone(1);
@@ -618,7 +619,8 @@ int main() {
             setFront(firstCameraFront, firstCameraPitch, firstCameraYaw);
             firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
             basic3dShader.setMat4("uV", firstCameraView);
-            
+
+            basic3dShader.setBool("uHasSpecular", true);
             basic3dShader.setMat4("uM", glm::mat4(1.0f)); // Prikaz mape za prvu kameru
             map.Draw(basic3dShader);
             
@@ -627,6 +629,7 @@ int main() {
                 glm::mat4 model = glm::mat4(1.0f);
                 moveTo(model, secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z);
                 rotateTo(model, secondCameraYaw);
+                basic3dShader.setBool("uHasSpecular", false);
                 basic3dShader.setMat4("uM", model);
                 secondDroneModel.Draw(basic3dShader);
             }
@@ -648,7 +651,8 @@ int main() {
             setFront(secondCameraFront, secondCameraPitch, secondCameraYaw);
             secondCameraView = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
             basic3dShader.setMat4("uV", secondCameraView);
-        
+
+            basic3dShader.setBool("uHasSpecular", true);
             basic3dShader.setMat4("uM", glm::mat4(1.0f));
             map.Draw(basic3dShader);
         
@@ -657,6 +661,7 @@ int main() {
                 glm::mat4 model = glm::mat4(1.0f);
                 moveTo(model, firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z);
                 rotateTo(model, firstCameraYaw);
+                basic3dShader.setBool("uHasSpecular", false);
                 basic3dShader.setMat4("uM", model);
                 firstDroneModel.Draw(basic3dShader);
             }
@@ -750,8 +755,8 @@ int main() {
     // Delete Textures
     glDeleteTextures(1, &nameTexture);
     glDeleteTextures(1, &mapTexture);
-    // glDeleteTextures(1, &firstDroneInfoText);
-    // glDeleteTextures(1, &secondDroneInfoText);
+    glDeleteTextures(1, &firstDroneInfoText);
+    glDeleteTextures(1, &secondDroneInfoText);
 
     // Delete VBO and VAO
     glDeleteBuffers(9, VBO);

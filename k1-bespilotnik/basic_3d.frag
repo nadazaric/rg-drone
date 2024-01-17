@@ -16,7 +16,10 @@ struct PointLight {
 };
 uniform PointLight uPointLights[6];
 
+uniform bool uHasSpecular;
+
 uniform sampler2D uDiffMap1;
+uniform sampler2D uSpecMap1;
 
 void main()
 {
@@ -33,8 +36,8 @@ void main()
     vec3 diffuse = diff * uLightColor;
 
     // specular
-    float specularStrength = 0.35;
-//    if (uHasSpecular) specularStrength = texture(uSpecMap1, chUV).r;
+    float specularStrength = 0.25;
+    if (uHasSpecular) specularStrength = texture(uSpecMap1, chUV).r;
     vec3 viewDir = normalize(uLightPos - chFragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
@@ -56,7 +59,7 @@ void main()
 
         // specular
         float specularStrength = 0.3;
-//        if(uHasSpecular) specularStrength = texture(uSpecMap1, chUV).r;
+        if(uHasSpecular) specularStrength = texture(uSpecMap1, chUV).r;
         vec3 viewDir = normalize(uViewPos - chFragPos);
         vec3 reflectDir = reflect(-lightDir, norm);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
