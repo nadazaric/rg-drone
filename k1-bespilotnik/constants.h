@@ -68,8 +68,8 @@ constexpr float PROGRESS_BAR_TOP = -0.75f;
 constexpr float PROGRESS_BAR_BOTTOM = -0.95f;
 constexpr float PROGRESS_BAR_LEFT = -0.8f;
 constexpr float PROGRESS_BAR_WIDTH = 0.5;
-constexpr float CONSUMPTION_DRONE_ACTIVE = 0.0008f;
-constexpr float CONSUMPTION_CAMERA_ON = 0.0002f;
+constexpr float CONSUMPTION_DRONE_ACTIVE = 0.00008f;
+constexpr float CONSUMPTION_CAMERA_ON = 0.00002f;
 
 // Info text
 constexpr float INFO_LEFT = -1.0f;

@@ -568,7 +568,26 @@ int main() {
             if (secondCameraPosition.y <= DRONE_MIN_HEIGHT) isSecondDroneOnLand = true;
         }
         
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render (if exist)
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D Render
+        if (isFirstDroneActive || isSecondDroneActive)
+        {
+            draw3D();
+            basic3dShader.use();
+            if (isSecondDroneActive)
+            {
+                basic3dShader.setVec3("uPointLights[0].position", secondCameraPosition.x - DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
+                basic3dShader.setVec3("uPointLights[1].position", secondCameraPosition.x + DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
+                basic3dShader.setVec3("uPointLights[2].position", secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z + DRONE_OUTBOX_WIDTH / 2);
+                basic3dShader.setVec3("uPointLights[0].color", 1.0f, 0.0f, 0.0f);
+                basic3dShader.setVec3("uPointLights[1].color", 0.0f, 1.0f, 0.0f);
+                basic3dShader.setVec3("uPointLights[2].color", 1.0f, 1.0f, 1.0f);
+            } else {
+                basic3dShader.setVec3("uPointLights[0].color", 0.0f, 0.0f, 0.0f);
+                basic3dShader.setVec3("uPointLights[1].color", 0.0f, 0.0f, 0.0f);
+                basic3dShader.setVec3("uPointLights[2].color", 0.0f, 0.0f, 0.0f);
+            }
+        }
+        
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Top Window
         topViewport();
         if (isFirstDroneCameraActive)
