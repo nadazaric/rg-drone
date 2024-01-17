@@ -199,6 +199,10 @@ bool isColision(glm::vec3 firstDrone, glm::vec3 secondDrone) {
     return collisionX && collisionY && collisionZ;
 }
 
+float mapValue(float value, float fromMin, float fromMax, float toMin, float toMax) {
+    return (value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin;
+}
+
 int main() {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Init libs
     if (!glfwInit()) {
@@ -241,7 +245,7 @@ int main() {
 
     // Uniforms
     unsigned int uBasicShaderColor = glGetUniformLocation(basicShader, "uColor");
-    unsigned int uDroneShaderPosition = glGetUniformLocation(droneShader, "uPos");
+    unsigned int uDroneShaderModelMatrix = glGetUniformLocation(droneShader, "uModelMatrix");
     unsigned int uDroneShaderColor = glGetUniformLocation(droneShader, "uColor");
     unsigned int uProgressBarShaderColor = glGetUniformLocation(progressBarShader, "uColor");
     unsigned int uProgressBarShaderProgress = glGetUniformLocation(progressBarShader, "uProgress");
@@ -709,14 +713,18 @@ int main() {
         glUseProgram(droneShader);
 
         if (!isFirstDroneDestroyed) {
-            glBindVertexArray(VAO[3]);
-            glUniform2f(uDroneShaderPosition, firstCameraPosition.x - FIRST_DRONE_INITIAL_X, - firstCameraPosition.z - FIRST_DRONE_INITIAL_Y);
+            float scale = mapValue(firstCameraPosition.y, DRONE_MIN_HEIGHT, DRONE_MAX_HEIGHT, 0.15f, 0.23f);
+            glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(firstCameraPosition.x, -firstCameraPosition.z, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, 0.0f));
+            glUniformMatrix4fv(uDroneShaderModelMatrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
             glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesFirstAirplane) / (2 * sizeof(float)));
         }
 
         if (!isSecondDroneDestroyed) {
-            glBindVertexArray(VAO[4]);
-            glUniform2f(uDroneShaderPosition, secondCameraPosition.x - SECOND_DRONE_INITIAL_X, - secondCameraPosition.z - SECOND_DRONE_INITIAL_Y);
+            float scale = mapValue(secondCameraPosition.y, DRONE_MIN_HEIGHT, DRONE_MAX_HEIGHT, 0.15f, 0.23f);
+            glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(secondCameraPosition.x, -secondCameraPosition.z, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, 0.0f));
+            glUniformMatrix4fv(uDroneShaderModelMatrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
             glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(verticesSecondAirplane) / (2 * sizeof(float)));
         }
 
