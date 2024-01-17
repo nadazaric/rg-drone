@@ -589,8 +589,8 @@ int main() {
             basic3dShader.setVec3("uPointLights[0].position", firstCameraPosition.x - DRONE_OUTBOX_WIDTH / 2, firstCameraPosition.y, firstCameraPosition.z);
             basic3dShader.setVec3("uPointLights[1].position", firstCameraPosition.x + DRONE_OUTBOX_WIDTH / 2, firstCameraPosition.y, firstCameraPosition.z);
             basic3dShader.setVec3("uPointLights[2].position", firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z + DRONE_OUTBOX_WIDTH / 2);
-            basic3dShader.setFloat("uPointLights[0].diffuseStrength", 0.3f);
-            basic3dShader.setFloat("uPointLights[1].diffuseStrength", 0.3f);
+            basic3dShader.setFloat("uPointLights[0].diffuseStrength", 0.4f);
+            basic3dShader.setFloat("uPointLights[1].diffuseStrength", 0.4f);
             basic3dShader.setFloat("uPointLights[2].diffuseStrength", 0.2f);
         } else {
             basic3dShader.setFloat("uPointLights[0].diffuseStrength", 0.0f);
@@ -602,8 +602,8 @@ int main() {
             basic3dShader.setVec3("uPointLights[3].position", secondCameraPosition.x - DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
             basic3dShader.setVec3("uPointLights[4].position", secondCameraPosition.x + DRONE_OUTBOX_WIDTH / 2, secondCameraPosition.y, secondCameraPosition.z);
             basic3dShader.setVec3("uPointLights[5].position", secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z + DRONE_OUTBOX_WIDTH / 2);
-            basic3dShader.setFloat("uPointLights[3].diffuseStrength", 0.3f);
-            basic3dShader.setFloat("uPointLights[4].diffuseStrength", 0.3f);
+            basic3dShader.setFloat("uPointLights[3].diffuseStrength", 0.4f);
+            basic3dShader.setFloat("uPointLights[4].diffuseStrength", 0.4f);
             basic3dShader.setFloat("uPointLights[5].diffuseStrength", 0.2f);
         } else {
             basic3dShader.setFloat("uPointLights[3].diffuseStrength", 0.0f);
@@ -622,10 +622,7 @@ int main() {
             setFront(firstCameraFront, firstCameraPitch, firstCameraYaw);
             firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
             basic3dShader.setMat4("uV", firstCameraView);
-
-            // TODO: Da li mijenjam taj uViewPos u skladu sa kamerom? Odnosno sa njenim pogledom?
-            // TODO: Ako da, da li je onda okej da nemam ovu uniformu, nego samo kroz vertex da proslijedim view.. NEKAKO?
-            // basic3dShader.setVec3("uViewPos", firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z); ??????
+            basic3dShader.setVec3("uViewPos", firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z); 
 
             basic3dShader.setBool("uHasSpecular", true);
             basic3dShader.setMat4("uM", glm::mat4(1.0f)); // Prikaz mape za prvu kameru
@@ -658,6 +655,7 @@ int main() {
             setFront(secondCameraFront, secondCameraPitch, secondCameraYaw);
             secondCameraView = glm::lookAt(secondCameraPosition, secondCameraPosition + secondCameraFront, secondCameraUp);
             basic3dShader.setMat4("uV", secondCameraView);
+            basic3dShader.setVec3("uViewPos", secondCameraPosition.x, secondCameraPosition.y, secondCameraPosition.z); 
 
             basic3dShader.setBool("uHasSpecular", true);
             basic3dShader.setMat4("uM", glm::mat4(1.0f));
