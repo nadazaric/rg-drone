@@ -14,7 +14,7 @@ uniform mat4 uP;
 void main()
 {
     chUV = inUV;
-    chFragPos = vec3(uM * vec4(inPos, 1.0));
-    chNormal = mat3(transpose(inverse(uM))) * inNormal;
-    gl_Position = uP * uV * vec4(chFragPos, 1.0);
+    chFragPos = vec3(uM * vec4(inPos, 1.0)); // pozicioniranje modela
+    chNormal = mat3(transpose(inverse(uM))) * inNormal; // transformacja normala zbog rotiranja modela...
+    gl_Position = uP * uV * vec4(chFragPos, 1.0); // fragmenata iz prostora svijeta u prostor kamere
 }

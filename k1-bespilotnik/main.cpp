@@ -260,6 +260,7 @@ int main() {
     // Name
     float verticesName[] =
     {
+        //   X          Y          U    V
         NAME_LEFT, NAME_BOTTOM,   0.0, 0.0,
         NAME_LEFT, NAME_TOP,      0.0, 1.0,
         NAME_RIGHT, NAME_BOTTOM,  1.0, 0.0,
@@ -267,21 +268,22 @@ int main() {
     };
     unsigned int nameStride = (2 + 2) * sizeof(float);
 
-    glBindVertexArray(VAO[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesName), verticesName, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, nameStride, ((void*)0));
-    glEnableVertexAttribArray(0);
+    glBindVertexArray(VAO[0]); // u sledecem dijelu koda koristim VAO 0
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]); // GL_ARRAY_BUFFER - buffer za pohranu podataka kao sto su  pozicije, normale, boje, koordinate teksture
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesName), verticesName, GL_STATIC_DRAW); // smjestas u GL_ARRAY_BUFFER, velicina, podaci, GL_STATIC_DRAW - podaci se nece cesto mijenjati
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, nameStride, ((void*)0)); //  postavlja parametre za jedan od atributa vertex shadera, ((void*)0) - pomjeraj u odnosu na pocetak
+    glEnableVertexAttribArray(0); // da atribut na poziciji 0 postane aktivan
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, nameStride, (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     unsigned nameTexture = loadImageToTexture(TITLE_TEXTURE_PATH);
-    glBindTexture(GL_TEXTURE_2D, nameTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, nameTexture); // u sledecem dijelu koda koristim ovu tekstru
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // ponavljaj teksturu
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //  piksel će uzeti boju najbližeg texela
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0); // unbindovanje trenutno aktivne teksture 
 
     // Map
     float verticesMap[] =
@@ -404,15 +406,16 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
     
-    glEnable(GL_BLEND);
+    glEnable(GL_BLEND); 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3D
 
     Shader basic3dShader("basic_3d.vert", "basic_3d.frag");
-    glm::mat4 projection = glm::perspective(glm::radians(50.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-
-    glm::mat4 firstCameraView;
+    glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+    // params - vertikalni ugao vidnog polja kamere, odnos širine i visine prozora ili ekrana, objekti blizi/dalji od bliske/daleke odsjecne ravni se odsjecaju
+    
+    glm::mat4 firstCameraView; // za tranformaciju objekta u odnosu na kameru
     glm::vec3 firstCameraPosition = glm::vec3(FIRST_DRONE_INITIAL_X, FIRST_DRONE_INITIAL_HEIGHT, FIRST_DRONE_INITIAL_Y + 1.0f);
     glm::vec3 firstCameraFront = glm::vec3(0.0f, 0.0f, 0.1f); // vektor koji odredjuje smijer gledanja kamere
     glm::vec3 firstCameraUp = glm::vec3(0.0f, 1.0f, 0.0f); // znaci da je "gore" usmjereno prema pozitivnom y-smjeru (oznacava sta je gore u odnosu na kameru)
@@ -433,7 +436,7 @@ int main() {
     // Postavi svjetlo i projekciju
     basic3dShader.use();
     basic3dShader.setVec3("uLightPos", 0, 1, 3);
-    basic3dShader.setVec3("uViewPos", 0, 0, 5);
+    basic3dShader.setVec3("uViewPos", 0, 0, 5); // TODO: Sta sa ovim? Posto mi se kamera krece onda bih trebala i njega uvijek definisati zar ne?
     basic3dShader.setVec3("uLightColor", 1, 1, 1);
     basic3dShader.setMat4("uP", projection);
 
@@ -620,6 +623,10 @@ int main() {
             firstCameraView = lookAt(firstCameraPosition, firstCameraPosition + firstCameraFront, firstCameraUp);
             basic3dShader.setMat4("uV", firstCameraView);
 
+            // TODO: Da li mijenjam taj uViewPos u skladu sa kamerom? Odnosno sa njenim pogledom?
+            // TODO: Ako da, da li je onda okej da nemam ovu uniformu, nego samo kroz vertex da proslijedim view.. NEKAKO?
+            // basic3dShader.setVec3("uViewPos", firstCameraPosition.x, firstCameraPosition.y, firstCameraPosition.z); ??????
+
             basic3dShader.setBool("uHasSpecular", true);
             basic3dShader.setMat4("uM", glm::mat4(1.0f)); // Prikaz mape za prvu kameru
             map.Draw(basic3dShader);
@@ -687,9 +694,9 @@ int main() {
 
         // Map
         mapViewport();
-        glBindVertexArray(VAO[1]);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, mapTexture);
+        glBindVertexArray(VAO[1]); // u nastavku koda koristim VAO 1
+        glActiveTexture(GL_TEXTURE0); 
+        glBindTexture(GL_TEXTURE_2D, mapTexture); // u nastavku koda koristim ovu teksturu
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // already active texture shader
         glUseProgram(basicShader);
         glUniform4f(uBasicShaderColor, 0.6f, 0.9f, 0.5f, 0.25f);
